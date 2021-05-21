@@ -85,6 +85,24 @@ async function main() {
                 proxyFactory: new Contract(process.env.PROXY_FACTORY as string, CreateProxyFactoryArtifact.abi, deployWallet) as CreateProxyFactory
             }
             break;
+        case "97":
+            confirmations = 3;
+            deployWallet = new Wallet(
+                process.env.TESTNET_PRIVATE_KEY as string,
+                new RetryProvider(3, process.env.TESTNET_PROVIDER)
+            );
+
+            environment = {
+                deploymentWallet: deployWallet,
+                WETH: new Contract(process.env.WETH_ADDRESS as string, WETHArtifact.abi, deployWallet) as IWETH,
+                ERC1820: new Contract(process.env.ERC1820_REGISTRY_ADDRESS as string, ERC1820RegistryArtifact.abi, deployWallet) as IERC1820Registry,
+                DAI: new Contract(process.env.DAI_ADDRESS as string, MockDaiArtifact.abi, deployWallet) as ERC20,
+                USDC: new Contract(process.env.USDC_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
+                DAIETHOracle: new Contract(process.env.DAI_ORACLE as string, MockAggregatorArtfiact.abi, deployWallet) as IAggregator,
+                USDCETHOracle: new Contract(process.env.USDC_ORACLE as string, MockAggregatorArtfiact.abi, deployWallet) as IAggregator,
+                proxyFactory: new Contract(process.env.PROXY_FACTORY as string, CreateProxyFactoryArtifact.abi, deployWallet) as CreateProxyFactory
+            }
+            break;
 
         default:
             log(`Unknown chain id: ${chainId}, quitting`);
