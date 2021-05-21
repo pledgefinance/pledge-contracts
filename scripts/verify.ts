@@ -44,8 +44,9 @@ async function main() {
   verifyAddresses.push(await notional.proxyAdmin.getProxyImplementation(notional.erc1155.address))
   verifyAddresses.push(await notional.proxyAdmin.getProxyImplementation(notional.erc1155trade.address))
 
-  const network = await notional.owner.provider.getNetwork()
-  await verify(verifyAddresses, network.name)
+  //const network = await notional.owner.provider.getNetwork()
+  //await verify(verifyAddresses, network.name)
+  await verify(verifyAddresses, 'bsctest')
 }
 
 main()

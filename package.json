@@ -19,7 +19,7 @@
         "upgrade:mainnet": "DEBUG=* DOTENV_CONFIG_PATH=.env.mainnet ts-node scripts/upgrade.ts",
         "patch": "git format-patch master --relative --stdout > patch.diff",
         "sloc": "rename 's/\\.sol/\\.c/' contracts/*.sol && scc contracts/* --wide --by-file && rename 's/\\.c/\\.sol/' contracts/*.c",
-        "verify:kovan:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.kovan ts-node scripts/verify.ts",
+        "verify:kovan:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc ts-node scripts/verify.ts",
         "verify:mainnet:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.mainnet ts-node scripts/verify.ts"
     },
     "repository": {
@@ -28,7 +28,7 @@
     },
     "homepage": "https://notional.finance",
     "devDependencies": {
-        "@nomiclabs/buidler": "^1.4.0",
+        "@nomiclabs/buidler": "^1.4.8",
         "@nomiclabs/buidler-ethers": "^1.1.2",
         "@nomiclabs/buidler-etherscan": "^2.1.0",
         "@nomiclabs/buidler-ganache": "^1.1.2",
@@ -66,6 +66,7 @@
     },
     "dependencies": {
         "@openzeppelin/contracts": "^3.1.0",
+        "builder": "^5.0.0",
         "debug": "^4.1.1",
         "ethers": "^4.0.46"
     }

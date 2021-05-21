@@ -73,6 +73,9 @@ module.exports = {
         },
         kovan: {
             url: process.env.TESTNET_PROVIDER || ''
+        },
+        bsctest:{
+            url: "https://data-seed-prebsc-1-s1.binance.org:8545/"
         }
     },
     etherscan: {
