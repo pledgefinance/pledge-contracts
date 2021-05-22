@@ -1,10 +1,6 @@
-# Notional Finance
+# Pledger Finance
 
-Notional is a fixed rate, fixed term lending and borrowing protocol on Ethereum. You can find us at https://notional.finance.
-
-## Security
-
-Our contracts have been audited by Open Zeppelin at this [commit hash](https://github.com/notional-finance/contracts/tree/b6fc6be4622422d0e34c90e77f2ec9da18596b8c). You can find their report at https://blog.openzeppelin.com/notional-audit/.
+Pledger is a fixed rate, fixed term lending and borrowing protocol on BSC smartChain. You can find us at .
 
 ### Bug Bounty
 

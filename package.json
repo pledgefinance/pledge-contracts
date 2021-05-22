@@ -1,9 +1,9 @@
 {
-    "name": "@notional-finance/contracts",
+    "name": "@pledger-finance/contracts",
     "version": "0.0.1",
     "license": "GPL-3.0-only",
-    "description": "Smart contracts for Notional Finance",
-    "author": "Jeff Wu <jeff@notional.finance>",
+    "description": "Smart contracts for Pledger Finance",
+    "author": "Justin Gao <flyingforce@gmail.com>",
     "scripts": {
         "compile": "npx buidler compile",
         "build": "npm run compile && npx buidler typechain",
@@ -19,7 +19,7 @@
         "upgrade:mainnet": "DEBUG=* DOTENV_CONFIG_PATH=.env.mainnet ts-node scripts/upgrade.ts",
         "patch": "git format-patch master --relative --stdout > patch.diff",
         "sloc": "rename 's/\\.sol/\\.c/' contracts/*.sol && scc contracts/* --wide --by-file && rename 's/\\.c/\\.sol/' contracts/*.c",
-        "verify:kovan:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc ts-node scripts/verify.ts",
+        "verify:bsctest:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc ts-node scripts/verify.ts",
         "verify:mainnet:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.mainnet ts-node scripts/verify.ts"
     },
     "repository": {
