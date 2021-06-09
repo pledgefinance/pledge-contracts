@@ -19,6 +19,7 @@
         "upgrade:mainnet": "DEBUG=* DOTENV_CONFIG_PATH=.env.mainnet ts-node scripts/upgrade.ts",
         "patch": "git format-patch master --relative --stdout > patch.diff",
         "sloc": "rename 's/\\.sol/\\.c/' contracts/*.sol && scc contracts/* --wide --by-file && rename 's/\\.c/\\.sol/' contracts/*.c",
+        "deploy:bsctest:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc ts-node scripts/deploy.ts",
         "verify:bsctest:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc ts-node scripts/verify.ts",
         "verify:mainnet:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.mainnet ts-node scripts/verify.ts"
     },
