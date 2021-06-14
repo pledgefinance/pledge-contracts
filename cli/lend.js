@@ -14,7 +14,7 @@ const maxTime = 4294967295
 // Check units for rate, value too big will cause transaction to fail
 const minImpliedRate = 0
 
-// Deposit collateral (not BNB)
+// Deposit tokens (not BNB)
 // NOTE: BNB should work with the depositETH method
 async function deposit(tokenAddress, amount, web3) {
   let escrowContract = new web3.eth.Contract(escrowJson, escrowAddr)
@@ -57,10 +57,9 @@ async function lend(tokenAddress, amount, maturity, web3) {
 }
 
 // Test lend 5 DAI
-const lendAmount = 5
+const lendAmount = 1
 const maturity = 1632960000
 
-// TODO: Check if there is existing allowance before attempting to send approval again
 init().then((web3) => {
   approve(daiAddress, escrowAddr, lendAmount, web3).then(() => {
     return deposit(daiAddress, lendAmount, web3)

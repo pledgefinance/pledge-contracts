@@ -30,6 +30,7 @@ function gasOptions(web3) {
 
 // ERC20 ABI
 const tokenABI = require('../abi/IERC20.json')
+// TODO: Check if there is existing allowance before attempting to send approval again
 async function approve(tokenAddress, spenderAddress, amount, web3) {
   let contract = new web3.eth.Contract(tokenABI, tokenAddress)
   let convertedAmount = await toAppropriateDecimals(tokenAddress, amount, web3)
