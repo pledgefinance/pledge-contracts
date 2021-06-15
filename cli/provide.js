@@ -33,6 +33,7 @@ async function deposit(tokenAddress, amount, web3) {
 
 
 // TODO: Figure out what these numbers should look like
+// BSC has essentially instant finality (3 second), so we can most likely ignore slippage
 const maxTime = 4294967295
 const minImpliedRate = 0
 const maxImpliedRate = 4294967295
