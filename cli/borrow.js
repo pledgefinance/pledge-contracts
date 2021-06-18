@@ -21,6 +21,7 @@ async function borrow(collatAddress, collatAmount, purchaseAddress, purchaseAmou
   let convertedAmount = await toAppropriateDecimals(purchaseAddress, purchaseAmount, web3)
 
   let marketContract = new web3.eth.Contract(marketABI, marketAddress)
+  // FIXME: End purchased cash =/= inputted amount
   let fCashRequired = await marketContract.methods.getCurrentCashTofCash(maturity, convertedAmount.toString()).call()
 
   let purchasedCash

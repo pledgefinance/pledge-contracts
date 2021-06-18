@@ -1,71 +1,62 @@
 require('dotenv').config()
 
-let {init, gasOptions, approve, toAppropriateDecimals} = require('./utils')
+let {approve, init, gasOptions, toAppropriateDecimals} = require('./utils')
+let {deposit} = require('./escrow')
+// let {batchOperation, constructDeposit, constructTrade} = require('./trade')
 
-const cashMarketJson = require('../abi/CashMarket.json')
-const escrowJson = require('../abi/Escrow.json')
+const marketABI = require('../abi/CashMarket.json')
 
-const cashMarketAddr = process.env.MARKET_ADDRESS
-const escrowAddr = process.env.ESCROW_ADDRESS
+const marketAddress = process.env.MARKET_ADDRESS
+const escrowAddress = process.env.ESCROW_ADDRESS
 const daiAddress = process.env.DAI_ADDRESS
 
-// Random timeout value, set max uint32
+// TODO: Find reasonable values
 const maxTime = 4294967295
-// Check units for rate, value too big will cause transaction to fail
 const minImpliedRate = 0
 
-// Deposit tokens (not BNB)
-// NOTE: BNB should work with the depositETH method
-async function deposit(tokenAddress, amount, web3) {
-  let escrowContract = new web3.eth.Contract(escrowJson, escrowAddr)
-
-  let convertedAmount = await toAppropriateDecimals(tokenAddress, amount, web3)
-
-  await escrowContract.methods.deposit(tokenAddress, convertedAmount).send(gasOptions(web3)).on(
-    'receipt', function(receipt) {
-      console.log('Deposit successful')
-      console.log(receipt)
-    }
-  ).on(
-    'error', function(error, receipt) {
-      console.log('Deposit failed.')
-      console.log(error)
-      process.exit()
-    }
-  )
-}
-
 async function lend(tokenAddress, amount, maturity, web3) {
-  let marketContract = new web3.eth.Contract(cashMarketJson, cashMarketAddr)
+  await approve(tokenAddress, escrowAddress, amount, web3)
+  await deposit(tokenAddress, amount, web3)
 
   let convertedAmount = await toAppropriateDecimals(tokenAddress, amount, web3)
-  // Check if this is the correct method
-  let expectedfCash = await marketContract.methods.getCurrentCashTofCash(maturity, convertedAmount.toString()).call()
 
-  // Returns amount of cash lent
-  await marketContract.methods.takefCash(maturity, expectedfCash, maxTime, minImpliedRate).send(gasOptions(web3)).on(
+  let marketContract = new web3.eth.Contract(marketABI, marketAddress)
+  let fCash = await marketContract.methods.getfCashToCurrentCash(maturity, convertedAmount.toString()).call()
+
+  await marketContract.methods.takefCash(maturity, fCash, maxTime, minImpliedRate).send(gasOptions(web3)).on(
     'receipt', function(receipt) {
+      purchasedCash = receipt.events.TakeCurrentCash.returnValues.cash
+      console.log('Lend successful.')
       console.log(receipt)
     }
   ).on(
     'error', function(error, receipt) {
-      console.log('Lend tx failed.')
+      console.log('Lend failed.')
       console.log(error)
       process.exit()
     }
   )
 }
+
+/* Lend function using ERC1155Trade contract batch operation
+const lendTradeType = 'TakefCash'
+async function lend(tokenAddress, amount, maturity, web3) {
+  await approve(tokenAddress, escrowAddr, amount, web3)
+  let convertedAmount = await toAppropriateDecimals(tokenAddress, amount, web3)
+
+  let deposit = constructDeposit(tokenAddress, convertedAmount)
+  let trade = constructTrade(lendTradeType, cashMarketAddr, maturity, convertedAmount, minRate, 0, 0)
+
+  await batchOperation([deposit], [trade], [], maxTime, web3)
+}
+*/
 
 // Test lend 5 DAI
-const lendAmount = 1
+const lendAmount = 5
 const maturity = 1632960000
 
 init().then((web3) => {
-  approve(daiAddress, escrowAddr, lendAmount, web3).then(() => {
-    return deposit(daiAddress, lendAmount, web3)
-  }).then(() => {
-    return lend(daiAddress, lendAmount, maturity, web3)
-  }).then(() => {
+  lend(daiAddress, lendAmount, maturity, web3).then(() => {
     process.exit(0)
   })
 })
