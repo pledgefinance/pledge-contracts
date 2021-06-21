@@ -63,9 +63,24 @@ async function toAppropriateDecimals(tokenAddress, amount, web3) {
   return amountBN.multipliedBy(power)
 }
 
+// Returns BNB balance
+async function getBalance(address, web3) {
+  let balance = await web3.eth.getBalance(address)
+  return balance
+}
+
+// Returns balance of token address provided
+async function getTokenBalance(tokenAddress, address, web3) {
+  let contract = new web3.eth.Contract(tokenABI, tokenAddress)
+  let balance = await contract.methods.balanceOf(address).call()
+  return balance
+}
+
 module.exports = {
   init,
   gasOptions,
   approve,
-  toAppropriateDecimals
+  toAppropriateDecimals,
+  getBalance,
+  getTokenBalance
 }
