@@ -69,11 +69,29 @@ async function getBalance(address, web3) {
   return balance
 }
 
+// Returns if account has sufficient BNB balance (does not account for gas)
+async function hasSufficientBalance(address, amount, web3) {
+  let balance = await getBalance(address, web3)
+  let convertedAmount = web3.utils.toWei(amount.toString())
+
+  let balanceBN = new BigNumber(balance)
+  let amountBN = new BigNumber(convertedAmount)
+
+  return balanceBN >= amountBN
+}
+
 // Returns balance of token address provided
 async function getTokenBalance(tokenAddress, address, web3) {
   let contract = new web3.eth.Contract(tokenABI, tokenAddress)
   let balance = await contract.methods.balanceOf(address).call()
   return balance
+}
+
+async function hasSufficientTokenBalance(tokenAddress, address, amount, web3) {
+  let balance = await getTokenBalance(tokenAddress, address, web3)
+  let convertedAmount = await toAppropriateDecimals(tokenAddress, amount, web3)
+
+  return balance >= convertedAmount.toNumber()
 }
 
 module.exports = {
@@ -82,5 +100,7 @@ module.exports = {
   approve,
   toAppropriateDecimals,
   getBalance,
-  getTokenBalance
+  hasSufficientBalance,
+  getTokenBalance,
+  hasSufficientTokenBalance
 }
