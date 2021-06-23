@@ -25,8 +25,7 @@ async function provide(tokenAddress, amount, maturity, web3) {
 
   await marketContract.methods.addLiquidity(maturity, convertedAmount.toString(), fCashMax, minImpliedRate, maxImpliedRate, maxTime).send(gasOptions(web3)).on(
     'receipt', function(receipt) {
-      console.log('Provide liquidity successful')
-      console.log(receipt)
+      console.log('Provide liquidity successful.')
     }
   ).on(
     'error', function(error, receipt) {

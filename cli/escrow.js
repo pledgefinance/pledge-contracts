@@ -14,7 +14,6 @@ async function deposit(tokenAddress, amount, web3) {
   await escrowContract.methods.deposit(tokenAddress, convertedAmount.toString()).send(gasOptions(web3)).on(
     'receipt', function(receipt) {
       console.log('Deposit successful.')
-      console.log(receipt)
     }
   ).on(
     'error', function(error, receipt) {
@@ -33,7 +32,6 @@ async function depositBNB(amount) {
   await escrowContract.methods.depositEth().send(gasOptions(web3)).on(
     'receipt', function(receipt) {
       console.log('Deposit successful.')
-      console.log(receipt)
     }
   ).on(
     'error', function(error, receipt) {
@@ -51,7 +49,6 @@ async function withdraw(tokenAddress, amount, web3) {
   await escrowContract.methods.withdraw(tokenAddress, amount).send(gasOptions(web3)).on(
     'receipt', function(receipt) {
       console.log('Withdraw successful.')
-      console.log(receipt)
     }
   ).on(
     'error', function(error, receipt) {
@@ -69,7 +66,6 @@ async function withdrawBNB(amount) {
   await escrowContract.methods.withdrawEth(amount).send(gasOptions(web3)).on(
     'receipt', function(receipt) {
       console.log('Withdraw successful.')
-      console.log(receipt)
     }
   ).on(
     'error', function(error, receipt) {

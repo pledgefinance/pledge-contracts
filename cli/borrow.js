@@ -29,7 +29,6 @@ async function borrow(collatAddress, collatAmount, purchaseAddress, purchaseAmou
     'receipt', function(receipt) {
       purchasedCash = receipt.events.TakeCurrentCash.returnValues.cash
       console.log('Borrow successful.')
-      console.log(receipt)
     }
   ).on(
     'error', function(error, receipt) {

@@ -25,9 +25,7 @@ async function lend(tokenAddress, amount, maturity, web3) {
 
   await marketContract.methods.takefCash(maturity, fCash, maxTime, minImpliedRate).send(gasOptions(web3)).on(
     'receipt', function(receipt) {
-      purchasedCash = receipt.events.TakeCurrentCash.returnValues.cash
       console.log('Lend successful.')
-      console.log(receipt)
     }
   ).on(
     'error', function(error, receipt) {
