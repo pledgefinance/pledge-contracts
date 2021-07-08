@@ -14,9 +14,9 @@ const usdcAddress = process.env.USDC_ADDRESS
 const maxTime = 4294967295
 const maxImpliedRate = 4294967295
 
-async function borrow(collatAddress, collatAmount, purchaseAddress, purchaseAmount, maturity, web3) {
+async function borrow(marketAddress, escrowAddress, collatAddress, collatAmount, purchaseAddress, purchaseAmount, maturity, web3) {
   await approve(collatAddress, escrowAddress, collatAmount, web3)
-  await deposit(collatAddress, collatAmount, web3)
+  await deposit(escrowAddress, collatAddress, collatAmount, web3)
 
   let convertedAmount = await toAppropriateDecimals(purchaseAddress, purchaseAmount, web3)
 
@@ -49,7 +49,7 @@ const purchaseAmount = 1
 const maturity = 1632960000
 
 init(process.env.PRIVATE_KEY).then((web3) => {
-  borrow(usdcAddress, collatAmount, daiAddress, purchaseAmount, maturity, web3).then(() => {
+  borrow(marketAddress, escrowAddress, usdcAddress, collatAmount, daiAddress, purchaseAmount, maturity, web3).then(() => {
     process.exit(0)
   })
 })

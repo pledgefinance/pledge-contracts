@@ -7,7 +7,7 @@ const escrowABI = require('../abi/Escrow.json')
 const escrowAddress = process.env.ESCROW_ADDRESS
 
 // Deposit BEP-20 tokens
-async function deposit(tokenAddress, amount, web3) {
+async function deposit(escrowAddress, tokenAddress, amount, web3) {
   let convertedAmount = await toAppropriateDecimals(tokenAddress, amount, web3)
 
   let escrowContract = new web3.eth.Contract(escrowABI, escrowAddress)

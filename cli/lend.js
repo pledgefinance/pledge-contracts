@@ -16,9 +16,9 @@ const daiAddress = process.env.DAI_ADDRESS
 const maxTime = 4294967295
 const minImpliedRate = 0
 
-async function lend(tokenAddress, amount, maturity, web3) {
+async function lend(marketAddress, escrowAddress, tokenAddress, amount, maturity, web3) {
   await approve(tokenAddress, escrowAddress, amount, web3)
-  await deposit(tokenAddress, amount, web3)
+  await deposit(escrowAddress, tokenAddress, amount, web3)
 
   let convertedAmount = await toAppropriateDecimals(tokenAddress, amount, web3)
 
@@ -63,7 +63,7 @@ const lendAmount = 5
 const maturity = 1632960000
 
 init().then((web3) => {
-  batchLend(daiAddress, lendAmount, maturity, web3).then(() => {
+  lend(marketAddress, escrowAddress, daiAddress, lendAmount, maturity, web3).then(() => {
     process.exit(0)
   })
 })
