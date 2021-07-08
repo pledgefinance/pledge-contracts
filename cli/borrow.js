@@ -53,3 +53,7 @@ init(process.env.PRIVATE_KEY).then((web3) => {
     process.exit(0)
   })
 })
+
+module.exports = {
+  borrow
+}

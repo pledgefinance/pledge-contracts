@@ -2,9 +2,11 @@ require('dotenv').config()
 
 let {approve, init, gasOptions, toAppropriateDecimals} = require('./utils')
 let {deposit} = require('./escrow')
-// let {batchOperation, constructDeposit, constructTrade} = require('./trade')
+let {batchOperation, constructDeposit, constructTrade} = require('./trade')
+// let {singleLend} = require('./trade')
 
 const marketABI = require('../abi/CashMarket.json')
+const contracts = require('../bsc-test.json')
 
 const marketAddress = process.env.MARKET_ADDRESS
 const escrowAddress = process.env.ESCROW_ADDRESS
@@ -36,25 +38,36 @@ async function lend(tokenAddress, amount, maturity, web3) {
   )
 }
 
-/* Lend function using ERC1155Trade contract batch operation
-const lendTradeType = 'TakefCash'
-async function lend(tokenAddress, amount, maturity, web3) {
-  await approve(tokenAddress, escrowAddr, amount, web3)
-  let convertedAmount = await toAppropriateDecimals(tokenAddress, amount, web3)
+// async function testLend(tokenAddress, amount, maturity, web3) {
+//   // await approve(tokenAddress, contracts.escrow, amount, web3)
+//
+//   let convertedAmount = await toAppropriateDecimals(tokenAddress, amount, web3)
+//   await singleLend(tokenAddress, convertedAmount, maturity, web3)
+// }
 
-  let deposit = constructDeposit(tokenAddress, convertedAmount)
-  let trade = constructTrade(lendTradeType, cashMarketAddr, maturity, convertedAmount, minRate, 0, 0)
+// Lend function using ERC1155Trade contract batch operation
+// const lendTradeType = 'TakefCash'
+// async function batchLend(tokenAddress, amount, maturity, web3) {
+//   // await approve(tokenAddress, escrowAddress, amount, web3)
+//   let convertedAmount = await toAppropriateDecimals(tokenAddress, amount, web3)
+//
+//   let deposit = constructDeposit(tokenAddress, convertedAmount)
+//   let trade = constructTrade(lendTradeType, marketAddress, maturity, convertedAmount, minImpliedRate, 0, 0)
+//
+//   await batchOperation([deposit], [trade], [], maxTime, web3)
+// }
 
-  await batchOperation([deposit], [trade], [], maxTime, web3)
-}
-*/
 
 // Test lend 5 DAI
 const lendAmount = 5
 const maturity = 1632960000
 
 init().then((web3) => {
-  lend(daiAddress, lendAmount, maturity, web3).then(() => {
+  batchLend(daiAddress, lendAmount, maturity, web3).then(() => {
     process.exit(0)
   })
 })
+
+module.exports = {
+  lend
+}
