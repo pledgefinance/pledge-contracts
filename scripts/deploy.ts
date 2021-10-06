@@ -13,7 +13,7 @@ import ERC1820RegistryArtifact from "../mocks/ERC1820Registry.json";
 import CreateProxyFactoryArtifact from "../build/CreateProxyFactory.json";
 import MockDaiArtifact from "../mocks/MockDai.json";
 import MockUSDCArtifact from "../mocks/MockUSDC.json";
-import MockAggregatorArtfiact from "../mocks/MockAggregator.json"
+import MockAggregatorArtifact from "../mocks/MockAggregator.json"
 
 import { Ierc1820Registry as IERC1820Registry } from "../typechain/Ierc1820Registry";
 import { Iweth as IWETH } from '../typechain/Iweth';
@@ -47,44 +47,6 @@ async function main() {
             environment = await deployLocal(deployWallet);
             confirmations = 1;
             break;
-        // kovan
-        case "42":
-        // rinkeby
-        case "4":
-            confirmations = 3;
-            deployWallet = new Wallet(
-                process.env.TESTNET_PRIVATE_KEY as string,
-                new RetryProvider(3, process.env.TESTNET_PROVIDER)
-            );
-            environment = {
-                deploymentWallet: deployWallet,
-                WETH: new Contract(process.env.WETH_ADDRESS as string, WETHArtifact.abi, deployWallet) as IWETH,
-                ERC1820: new Contract(process.env.ERC1820_REGISTRY_ADDRESS as string, ERC1820RegistryArtifact.abi, deployWallet) as IERC1820Registry,
-                DAI: new Contract(process.env.DAI_ADDRESS as string, MockDaiArtifact.abi, deployWallet) as ERC20,
-                USDC: new Contract(process.env.USDC_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
-                DAIETHOracle: new Contract(process.env.DAI_ORACLE as string, MockAggregatorArtfiact.abi, deployWallet) as IAggregator,
-                USDCETHOracle: new Contract(process.env.USDC_ORACLE as string, MockAggregatorArtfiact.abi, deployWallet) as IAggregator,
-                proxyFactory: new Contract(process.env.PROXY_FACTORY as string, CreateProxyFactoryArtifact.abi, deployWallet) as CreateProxyFactory
-            };
-            break;
-        case "1":
-            confirmations = 3;
-            deployWallet = new Wallet(
-                process.env.TESTNET_PRIVATE_KEY as string,
-                new RetryProvider(3, process.env.TESTNET_PROVIDER)
-            );
-
-            environment = {
-                deploymentWallet: deployWallet,
-                WETH: new Contract(process.env.WETH_ADDRESS as string, WETHArtifact.abi, deployWallet) as IWETH,
-                ERC1820: new Contract(process.env.ERC1820_REGISTRY_ADDRESS as string, ERC1820RegistryArtifact.abi, deployWallet) as IERC1820Registry,
-                DAI: new Contract(process.env.DAI_ADDRESS as string, MockDaiArtifact.abi, deployWallet) as ERC20,
-                USDC: new Contract(process.env.USDC_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
-                DAIETHOracle: new Contract(process.env.DAI_ORACLE as string, MockAggregatorArtfiact.abi, deployWallet) as IAggregator,
-                USDCETHOracle: new Contract(process.env.USDC_ORACLE as string, MockAggregatorArtfiact.abi, deployWallet) as IAggregator,
-                proxyFactory: new Contract(process.env.PROXY_FACTORY as string, CreateProxyFactoryArtifact.abi, deployWallet) as CreateProxyFactory
-            }
-            break;
         case "97":
             confirmations = 3;
             deployWallet = new Wallet(
@@ -98,17 +60,42 @@ async function main() {
                 ERC1820: new Contract(process.env.ERC1820_REGISTRY_ADDRESS as string, ERC1820RegistryArtifact.abi, deployWallet) as IERC1820Registry,
                 DAI: new Contract(process.env.DAI_ADDRESS as string, MockDaiArtifact.abi, deployWallet) as ERC20,
                 USDC: new Contract(process.env.USDC_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
-                DAIETHOracle: new Contract(process.env.DAI_ORACLE as string, MockAggregatorArtfiact.abi, deployWallet) as IAggregator,
-                USDCETHOracle: new Contract(process.env.USDC_ORACLE as string, MockAggregatorArtfiact.abi, deployWallet) as IAggregator,
+                BTC: new Contract(process.env.BTC_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
+                BUSD: new Contract(process.env.BUSD_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
+                DAIETHOracle: new Contract(process.env.DAI_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
+                USDCETHOracle: new Contract(process.env.USDC_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
+                BTCOracle: new Contract(process.env.BTC_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
+                BUSDOracle: new Contract(process.env.BUSD_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
                 proxyFactory: new Contract(process.env.PROXY_FACTORY as string, CreateProxyFactoryArtifact.abi, deployWallet) as CreateProxyFactory
             }
             break;
-
+          case "56":
+              confirmations = 3;
+              deployWallet = new Wallet(
+                  process.env.TESTNET_PRIVATE_KEY as string,
+                  new RetryProvider(3, process.env.TESTNET_PROVIDER)
+              );
+              environment = {
+                  deploymentWallet: deployWallet,
+                  WETH: new Contract(process.env.WETH_ADDRESS as string, WETHArtifact.abi, deployWallet) as IWETH,
+                  ERC1820: new Contract(process.env.ERC1820_REGISTRY_ADDRESS as string, ERC1820RegistryArtifact.abi, deployWallet) as IERC1820Registry,
+                  DAI: new Contract(process.env.DAI_ADDRESS as string, MockDaiArtifact.abi, deployWallet) as ERC20,
+                  USDC: new Contract(process.env.USDC_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
+                  BTC: new Contract(process.env.BTC_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
+                  BUSD: new Contract(process.env.BUSD_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
+                  DAIETHOracle: new Contract(process.env.DAI_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
+                  USDCETHOracle: new Contract(process.env.USDC_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
+                  BTCOracle: new Contract(process.env.BTC_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
+                  BUSDOracle: new Contract(process.env.BUSD_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
+                  proxyFactory: new Contract(process.env.PROXY_FACTORY as string, CreateProxyFactoryArtifact.abi, deployWallet) as CreateProxyFactory
+              }
+              break;
         default:
             log(`Unknown chain id: ${chainId}, quitting`);
             process.exit(1);
     }
 
+    console.log('Deploying')
     const notional = await NotionalDeployer.deploy(
         environment.deploymentWallet,
         environment,
@@ -122,7 +109,8 @@ async function main() {
         confirmations
     );
 
-    // List DAI currency
+    console.log('DAI')
+    // List currencies
     const daiId = await notional.listCurrency(
         environment.DAI.address,
         environment.DAIETHOracle,
@@ -130,49 +118,56 @@ async function main() {
         false,
         false,
         WeiPerEther,
-        false 
+        false
     )
 
+    console.log('USDC')
+    const usdcId = await notional.listCurrency(
+        environment.USDC.address,
+        environment.USDCETHOracle,
+        parseEther("1.4"),
+        false,
+        false,
+        WeiPerEther,
+        false
+    )
+    log(usdcId)
+
+
+    console.log('BTC')
+    const btcId = await notional.listCurrency(
+      environment.BTC.address,
+      environment.BTCOracle,
+      parseEther("1.4"),
+      false,
+      false,
+      WeiPerEther,
+      false
+    )
+    log(btcId)
+
+
+    console.log('BUSD')
+    const busdId = await notional.listCurrency(
+      environment.BUSD.address,
+      environment.BUSDOracle,
+      parseEther("1.4"),
+      false,
+      false,
+      WeiPerEther,
+      false
+    )
+    log(busdId)
+
+    console.log('DAI')
     await notional.deployCashMarket(
         daiId,
-        1,
+        2,
         ONE_MONTH,
         parseEther("1000"),
         new BigNumber(2.5 * BASIS_POINT),
         new BigNumber(0),
-        1_100_000_000,
-        85
-    );
-
-    await notional.deployCashMarket(
-        daiId,
-        2,
-        ONE_MONTH * 3,
-        parseEther("1000"),
-        new BigNumber(2.5 * BASIS_POINT * 3),
-        new BigNumber(0),
-        1_100_000_000,
-        85
-    );
-
-    const usdcId = await notional.listCurrency(
-        environment.USDC.address,
-        environment.USDCETHOracle,
-        parseEther("1.2"),
-        false,
-        false,
-        WeiPerEther,
-        false 
-    )
-
-    await notional.deployCashMarket(
-        usdcId,
-        2,
-        ONE_MONTH * 3,
-        parseEther("1000"),
-        new BigNumber(2.5 * BASIS_POINT * 3),
-        new BigNumber(0),
-        1_100_000_000,
+        1_030_000_000,
         85
     );
 

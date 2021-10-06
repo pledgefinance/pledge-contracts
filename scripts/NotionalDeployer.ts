@@ -39,8 +39,12 @@ export interface Environment {
     ERC1820: IERC1820Registry;
     DAI: ERC20;
     USDC: ERC20;
+    BTC: ERC20;
+    BUSD: ERC20;
     DAIETHOracle: IAggregator;
     USDCETHOracle: IAggregator;
+    BTCOracle: IAggregator;
+    BUSDOracle: IAggregator;
     proxyFactory: CreateProxyFactory;
 }
 
@@ -114,7 +118,7 @@ export class NotionalDeployer {
                 const byteOffsetStart = offset.start * 2 + 2;
                 const byteOffsetEnd = byteOffsetStart + offset.length * 2;
                 artifact.bytecode = artifact.bytecode.substring(0, byteOffsetStart) +
-                    contract.address.substr(2) + 
+                    contract.address.substr(2) +
                     artifact.bytecode.substring(byteOffsetEnd);
             }
         }
@@ -129,13 +133,14 @@ export class NotionalDeployer {
         confirmations: number,
         libraries?: Map<string, Contract>
     ) => {
+        console.log(`[deployContract]`)
         let gasLimit: number | undefined;
         if (process.env.COVERAGE == "true") {
             gasLimit = 20_000_000;
         } else if (process.env.GAS_LIMIT != null) {
             gasLimit = parseInt(process.env.GAS_LIMIT);
         } else {
-            gasLimit = 6_000_000;
+            gasLimit = 20_000_000;
         }
         log(`Gas limit setting ${process.env.GAS_LIMIT} and ${gasLimit}`)
 
@@ -145,6 +150,7 @@ export class NotionalDeployer {
         } else {
             artifact = name;
         }
+        console.log(`${artifact.contractName}`)
 
         if (Object.keys(artifact.linkReferences).length > 0) {
             if (libraries == null) throw new Error(`Libraries not defined for ${artifact.contractName}`);
@@ -152,19 +158,21 @@ export class NotionalDeployer {
         }
 
         const factory = new ContractFactory(artifact.abi, artifact.bytecode, owner);
+        console.log(`Getting transaction ${artifact.contractName}...`);
         const txn = factory.getDeployTransaction(...args);
         if (gasLimit == -1) {
-            if (process.env.GAS_PRICE == undefined) throw new Error("Define gas price in environment")
+            if (process.env.GAS_PRICE == undefined) throw new Error("Define gas price in")
             txn.gasPrice = parseUnits(process.env.GAS_PRICE, "gwei");
             log(`Gas price: ${txn.gasPrice}`)
         } else {
             txn.gasLimit = gasLimit;
         }
-
+        console.log(`Deploying ${artifact.contractName}...`);
         log(`Deploying ${artifact.contractName}...`);
         const receipt = await (await owner.sendTransaction(txn)).wait(confirmations);
         const contract = new Contract(receipt.contractAddress as string, artifact.abi, owner);
         log(`Successfully deployed ${artifact.contractName} at ${contract.address}`);
+        console.log(`Successfully deployed ${artifact.contractName} at ${contract.address}`);
 
         // We hash the bytecode in the artifact because the code on chain is not the same
         const bytecodeHash = ethers.utils.keccak256(artifact.bytecode);
@@ -219,10 +227,12 @@ export class NotionalDeployer {
             }
             proxyAddress = await proxyFactory.getDeploymentAddress(salt, owner.address);
             log(`Using proxy factory, got deployment address of ${proxyAddress} for ${artifact.contractName}`);
+            console.log(`Using proxy factory, got deployment address of ${proxyAddress} for ${artifact.contractName}`);
             await NotionalDeployer.txMined(proxyFactory.deploy(salt, logicAddress, proxyAdmin.address, data), confirmations);
         }
 
         log(`Deployed proxy for ${artifact.contractName} at ${proxyAddress}`);
+        console.log(`Deployed proxy for ${artifact.contractName} at ${proxyAddress}`);
         return (new ethers.Contract(proxyAddress, artifact.abi, owner) as unknown) as T
     };
 
@@ -257,7 +267,7 @@ export class NotionalDeployer {
         // Deploy transactions are used to determine if bytecode has changed
         const deployedCodeHash = new Map<string, string>();
         let cashMarketLogicAddress: string;
-        
+
         {
             let {contract, bytecodeHash} = await NotionalDeployer.deployContract(
                 owner,
@@ -299,7 +309,7 @@ export class NotionalDeployer {
             confirmations,
         )).contract as ProxyAdmin;
 
-        const  directory = await NotionalDeployer.deployProxyContract<Directory>(
+        const directory = await NotionalDeployer.deployProxyContract<Directory>(
             owner,
             "Directory",
             "address",
@@ -364,30 +374,38 @@ export class NotionalDeployer {
 
         // Set dependencies
         log("Setting Notional Contract: Escrow");
+        console.log("Setting Notional Contract: Escrow");
         await NotionalDeployer.txMined(directory.setContract(CoreContracts.Escrow, escrow.address), confirmations);
         log("Setting Notional Contract: Portfolios");
+        console.log("Setting Notional Contract: Portfolios");
         await NotionalDeployer.txMined(directory.setContract(CoreContracts.Portfolios, portfolios.address), confirmations);
         log("Setting Notional Contract: ERC1155Token");
+        console.log("Setting Notional Contract: ERC1155Token");
         await NotionalDeployer.txMined(directory.setContract(CoreContracts.ERC1155Token, erc1155.address), confirmations);
         log("Setting Notional Contract: ERC1155Trade");
+        console.log("Setting Notional Contract: ERC1155Trade");
         await NotionalDeployer.txMined(directory.setContract(CoreContracts.ERC1155Trade, erc1155trade.address), confirmations);
 
         log("Setting Notional Dependencies: Escrow Dependency");
+        console.log("Setting Notional Dependencies: Escrow Dependency");
         await NotionalDeployer.txMined(directory.setDependencies(CoreContracts.Escrow, [
             CoreContracts.Portfolios,
             CoreContracts.ERC1155Trade,
         ]), confirmations);
         log("Setting Notional Dependencies: ERC1155Token Dependency");
+        console.log("Setting Notional Dependencies: ERC1155Token Dependency");
         await NotionalDeployer.txMined(
             directory.setDependencies(CoreContracts.ERC1155Token, [CoreContracts.Portfolios]),
             confirmations
         );
         log("Setting Notional Dependencies: ERC1155Trade Dependency");
+        console.log("Setting Notional Dependencies: ERC1155Trade Dependency");
         await NotionalDeployer.txMined(
             directory.setDependencies(CoreContracts.ERC1155Trade, [CoreContracts.Portfolios, CoreContracts.Escrow]),
             confirmations
         );
         log("Setting Notional Dependencies: Portfolio Dependency");
+        console.log("Setting Notional Dependencies: Portfolio Dependency");
         await NotionalDeployer.txMined(
             directory.setDependencies(CoreContracts.Portfolios, [
                 CoreContracts.Escrow,
@@ -399,9 +417,11 @@ export class NotionalDeployer {
 
         // Setup some contract defaults
         log("Setting liquidation discounts");
+        console.log("Setting liquidation discounts");
         await NotionalDeployer.txMined(escrow.setDiscounts(liquidationDiscount, settlementDiscount, repoDiscount), confirmations);
 
         log("Setting risk haircuts");
+        console.log("Setting risk haircuts");
         await NotionalDeployer.txMined(portfolios.setHaircuts(liquidityHaircut, fCashHaircut, fCashMaxHaircut), confirmations);
 
         return new NotionalDeployer(

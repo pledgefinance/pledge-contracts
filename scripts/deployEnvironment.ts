@@ -29,6 +29,8 @@ export async function deployTestEnvironment(
 
     const dai = (await NotionalDeployer.deployContract(deployWallet, MockDaiArtifact, [], confirmations)).contract as ERC20;
     const usdc = (await NotionalDeployer.deployContract(deployWallet, MockUSDCArtifact, [], confirmations)).contract as ERC20;
+    const btc = (await NotionalDeployer.deployContract(deployWallet, MockUSDCArtifact, [], confirmations)).contract as ERC20;
+    const busd = (await NotionalDeployer.deployContract(deployWallet, MockUSDCArtifact, [], confirmations)).contract as ERC20;
 
     const daiOracle = (await NotionalDeployer.deployContract(deployWallet, MockAggregatorArtfiact, [], confirmations)).contract as MockAggregator;
     await NotionalDeployer.txMined(daiOracle.setAnswer(parseEther("0.01")), confirmations);
@@ -42,8 +44,12 @@ export async function deployTestEnvironment(
         ERC1820: new Contract(registryAddress, ERC1820RegistryArtifact.abi, deployWallet) as IERC1820Registry,
         DAI: dai,
         USDC: usdc,
+        BTC: btc,
+        BUSD: busd,
         DAIETHOracle: daiOracle as unknown as IAggregator,
         USDCETHOracle: usdcOracle as unknown as IAggregator,
+        BTCOracle:  usdcOracle as unknown as IAggregator,
+        BUSDOracle: usdcOracle as unknown as IAggregator,
         proxyFactory: new Contract(proxyFactoryAddress, CreateProxyFactoryArtifact.abi, deployWallet) as CreateProxyFactory
     }
 }
