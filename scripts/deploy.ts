@@ -1,26 +1,26 @@
-import { Contract, Wallet } from "ethers";
-import { JsonRpcProvider } from "ethers/providers";
-import { NotionalDeployer, Environment } from "./NotionalDeployer";
-import { BigNumber, parseEther } from "ethers/utils";
-import { config } from "dotenv";
-import { WeiPerEther } from 'ethers/constants';
+import {Contract, Wallet} from "ethers";
+import {JsonRpcProvider} from "ethers/providers";
+import {NotionalDeployer, Environment} from "./NotionalDeployer";
+import {BigNumber, parseEther} from "ethers/utils";
+import {config} from "dotenv";
+import {WeiPerEther} from "ethers/constants";
 import Debug from "debug";
-import { deployLocal } from './deployEnvironment';
-import path from 'path';
+import {deployLocal} from "./deployEnvironment";
+import path from "path";
 
 import WETHArtifact from "../mocks/WETH9.json";
 import ERC1820RegistryArtifact from "../mocks/ERC1820Registry.json";
 import CreateProxyFactoryArtifact from "../build/CreateProxyFactory.json";
 import MockDaiArtifact from "../mocks/MockDai.json";
 import MockUSDCArtifact from "../mocks/MockUSDC.json";
-import MockAggregatorArtifact from "../mocks/MockAggregator.json"
+import MockAggregatorArtifact from "../mocks/MockAggregator.json";
 
-import { Ierc1820Registry as IERC1820Registry } from "../typechain/Ierc1820Registry";
-import { Iweth as IWETH } from '../typechain/Iweth';
-import { Ierc20 as ERC20 } from "../typechain/Ierc20";
-import { IAggregator } from '../typechain/IAggregator';
-import { CreateProxyFactory } from '../typechain/CreateProxyFactory';
-import { RetryProvider } from './RetryProvider';
+import {Ierc1820Registry as IERC1820Registry} from "../typechain/Ierc1820Registry";
+import {Iweth as IWETH} from "../typechain/Iweth";
+import {Ierc20 as ERC20} from "../typechain/Ierc20";
+import {IAggregator} from "../typechain/IAggregator";
+import {CreateProxyFactory} from "../typechain/CreateProxyFactory";
+import {RetryProvider} from "./RetryProvider";
 
 const log = Debug("notional:deploy");
 const ONE_MONTH = 2592000;
@@ -29,7 +29,7 @@ const BASIS_POINT = 1e5;
 async function main() {
     const envPath = `${process.env.DOTENV_CONFIG_PATH}`;
     log(`Loading enviromnent from ${envPath} from ${process.cwd()}`);
-    config({ path: envPath });
+    config({path: envPath});
 
     const chainId = process.env.DEPLOY_CHAIN_ID as string;
     let environment: Environment;
@@ -57,45 +57,93 @@ async function main() {
             environment = {
                 deploymentWallet: deployWallet,
                 WETH: new Contract(process.env.WETH_ADDRESS as string, WETHArtifact.abi, deployWallet) as IWETH,
-                ERC1820: new Contract(process.env.ERC1820_REGISTRY_ADDRESS as string, ERC1820RegistryArtifact.abi, deployWallet) as IERC1820Registry,
+                ERC1820: new Contract(
+                    process.env.ERC1820_REGISTRY_ADDRESS as string,
+                    ERC1820RegistryArtifact.abi,
+                    deployWallet
+                ) as IERC1820Registry,
                 DAI: new Contract(process.env.DAI_ADDRESS as string, MockDaiArtifact.abi, deployWallet) as ERC20,
                 USDC: new Contract(process.env.USDC_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
                 BTC: new Contract(process.env.BTC_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
                 BUSD: new Contract(process.env.BUSD_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
-                DAIETHOracle: new Contract(process.env.DAI_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
-                USDCETHOracle: new Contract(process.env.USDC_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
-                BTCOracle: new Contract(process.env.BTC_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
-                BUSDOracle: new Contract(process.env.BUSD_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
-                proxyFactory: new Contract(process.env.PROXY_FACTORY as string, CreateProxyFactoryArtifact.abi, deployWallet) as CreateProxyFactory
-            }
+                DAIETHOracle: new Contract(
+                    process.env.DAI_ORACLE as string,
+                    MockAggregatorArtifact.abi,
+                    deployWallet
+                ) as IAggregator,
+                USDCETHOracle: new Contract(
+                    process.env.USDC_ORACLE as string,
+                    MockAggregatorArtifact.abi,
+                    deployWallet
+                ) as IAggregator,
+                BTCOracle: new Contract(
+                    process.env.BTC_ORACLE as string,
+                    MockAggregatorArtifact.abi,
+                    deployWallet
+                ) as IAggregator,
+                BUSDOracle: new Contract(
+                    process.env.BUSD_ORACLE as string,
+                    MockAggregatorArtifact.abi,
+                    deployWallet
+                ) as IAggregator,
+                proxyFactory: new Contract(
+                    process.env.PROXY_FACTORY as string,
+                    CreateProxyFactoryArtifact.abi,
+                    deployWallet
+                ) as CreateProxyFactory,
+            };
             break;
-          case "56":
-              confirmations = 3;
-              deployWallet = new Wallet(
-                  process.env.TESTNET_PRIVATE_KEY as string,
-                  new RetryProvider(3, process.env.TESTNET_PROVIDER)
-              );
-              environment = {
-                  deploymentWallet: deployWallet,
-                  WETH: new Contract(process.env.WETH_ADDRESS as string, WETHArtifact.abi, deployWallet) as IWETH,
-                  ERC1820: new Contract(process.env.ERC1820_REGISTRY_ADDRESS as string, ERC1820RegistryArtifact.abi, deployWallet) as IERC1820Registry,
-                  DAI: new Contract(process.env.DAI_ADDRESS as string, MockDaiArtifact.abi, deployWallet) as ERC20,
-                  USDC: new Contract(process.env.USDC_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
-                  BTC: new Contract(process.env.BTC_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
-                  BUSD: new Contract(process.env.BUSD_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
-                  DAIETHOracle: new Contract(process.env.DAI_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
-                  USDCETHOracle: new Contract(process.env.USDC_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
-                  BTCOracle: new Contract(process.env.BTC_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
-                  BUSDOracle: new Contract(process.env.BUSD_ORACLE as string, MockAggregatorArtifact.abi, deployWallet) as IAggregator,
-                  proxyFactory: new Contract(process.env.PROXY_FACTORY as string, CreateProxyFactoryArtifact.abi, deployWallet) as CreateProxyFactory
-              }
-              break;
+        case "56":
+            confirmations = 3;
+            deployWallet = new Wallet(
+                process.env.TESTNET_PRIVATE_KEY as string,
+                new RetryProvider(3, process.env.TESTNET_PROVIDER)
+            );
+            environment = {
+                deploymentWallet: deployWallet,
+                WETH: new Contract(process.env.WETH_ADDRESS as string, WETHArtifact.abi, deployWallet) as IWETH,
+                ERC1820: new Contract(
+                    process.env.ERC1820_REGISTRY_ADDRESS as string,
+                    ERC1820RegistryArtifact.abi,
+                    deployWallet
+                ) as IERC1820Registry,
+                DAI: new Contract(process.env.DAI_ADDRESS as string, MockDaiArtifact.abi, deployWallet) as ERC20,
+                USDC: new Contract(process.env.USDC_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
+                BTC: new Contract(process.env.BTC_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
+                BUSD: new Contract(process.env.BUSD_ADDRESS as string, MockUSDCArtifact.abi, deployWallet) as ERC20,
+                DAIETHOracle: new Contract(
+                    process.env.DAI_ORACLE as string,
+                    MockAggregatorArtifact.abi,
+                    deployWallet
+                ) as IAggregator,
+                USDCETHOracle: new Contract(
+                    process.env.USDC_ORACLE as string,
+                    MockAggregatorArtifact.abi,
+                    deployWallet
+                ) as IAggregator,
+                BTCOracle: new Contract(
+                    process.env.BTC_ORACLE as string,
+                    MockAggregatorArtifact.abi,
+                    deployWallet
+                ) as IAggregator,
+                BUSDOracle: new Contract(
+                    process.env.BUSD_ORACLE as string,
+                    MockAggregatorArtifact.abi,
+                    deployWallet
+                ) as IAggregator,
+                proxyFactory: new Contract(
+                    process.env.PROXY_FACTORY as string,
+                    CreateProxyFactoryArtifact.abi,
+                    deployWallet
+                ) as CreateProxyFactory,
+            };
+            break;
         default:
             log(`Unknown chain id: ${chainId}, quitting`);
             process.exit(1);
     }
 
-    console.log('Deploying')
+    console.log("Deploying");
     const notional = await NotionalDeployer.deploy(
         environment.deploymentWallet,
         environment,
@@ -109,7 +157,7 @@ async function main() {
         confirmations
     );
 
-    console.log('DAI')
+    console.log("DAI");
     // List currencies
     const daiId = await notional.listCurrency(
         environment.DAI.address,
@@ -119,9 +167,9 @@ async function main() {
         false,
         WeiPerEther,
         false
-    )
+    );
 
-    console.log('USDC')
+    console.log("USDC");
     const usdcId = await notional.listCurrency(
         environment.USDC.address,
         environment.USDCETHOracle,
@@ -130,36 +178,34 @@ async function main() {
         false,
         WeiPerEther,
         false
-    )
-    log(usdcId)
+    );
+    log(usdcId);
 
-
-    console.log('BTC')
+    console.log("BTC");
     const btcId = await notional.listCurrency(
-      environment.BTC.address,
-      environment.BTCOracle,
-      parseEther("1.4"),
-      false,
-      false,
-      WeiPerEther,
-      false
-    )
-    log(btcId)
+        environment.BTC.address,
+        environment.BTCOracle,
+        parseEther("1.4"),
+        false,
+        false,
+        WeiPerEther,
+        false
+    );
+    log(btcId);
 
-
-    console.log('BUSD')
+    console.log("BUSD");
     const busdId = await notional.listCurrency(
-      environment.BUSD.address,
-      environment.BUSDOracle,
-      parseEther("1.4"),
-      false,
-      false,
-      WeiPerEther,
-      false
-    )
-    log(busdId)
+        environment.BUSD.address,
+        environment.BUSDOracle,
+        parseEther("1.4"),
+        false,
+        false,
+        WeiPerEther,
+        false
+    );
+    log(busdId);
 
-    console.log('DAI')
+    console.log("DAI");
     await notional.deployCashMarket(
         daiId,
         2,
@@ -171,14 +217,14 @@ async function main() {
         85
     );
 
-    const outputFile = path.join(__dirname, "../" + process.env.CONTRACTS_FILE as string);
+    const outputFile = path.join(__dirname, ("../" + process.env.CONTRACTS_FILE) as string);
     await notional.saveAddresses(outputFile);
     await notional.transferOwner(process.env.TRANSFER_OWNER_PUBLIC_KEY as string);
 }
 
 main()
     .then(() => process.exit(0))
-    .catch(error => {
+    .catch((error) => {
         console.error(error);
         process.exit(1);
     });

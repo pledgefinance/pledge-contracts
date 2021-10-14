@@ -9,7 +9,7 @@ usePlugin("@nomiclabs/buidler-waffle");
 usePlugin("@nomiclabs/buidler-ganache");
 usePlugin("@nomiclabs/buidler-solhint");
 usePlugin("@nomiclabs/buidler-etherscan");
-usePlugin('buidler-abi-exporter');
+usePlugin("buidler-abi-exporter");
 usePlugin("buidler-gas-reporter");
 usePlugin("buidler-typechain");
 usePlugin("solidity-coverage");
@@ -21,14 +21,14 @@ const CONTRACTS = [
     "ERC1155Token",
     "ERC1155Trade",
     "Liquidation",
-    "RiskFramework"
+    "RiskFramework",
 ];
 
 task("codeSize", "Prints the code size of all contracts")
     .addOptionalParam("contract", "A particular contract to check")
-    .setAction(async taskArgs => {
+    .setAction(async (taskArgs) => {
         if (!taskArgs.contract) {
-            CONTRACTS.forEach(name => {
+            CONTRACTS.forEach((name) => {
                 const code = JSON.parse(readFileSync(`./build/${name}.json`, "utf8"));
                 let bytes = (code.bytecode.length - 2) / 2;
                 if (bytes > 22000) {
@@ -45,59 +45,71 @@ module.exports = {
         version: "0.6.4",
         optimizer: {
             enabled: true,
-            runs: 200
-        }
+            runs: 200,
+        },
     },
     mocha: {
-        timeout: 50000
+        timeout: 50000,
     },
     paths: {
-        artifacts: "./build"
+        artifacts: "./build",
     },
     networks: {
         buidlerevm: {
-            accounts: defaultAccounts.map(acc => ({
+            accounts: defaultAccounts.map((acc) => ({
                 balance: acc.balance,
-                privateKey: acc.secretKey
-            }))
+                privateKey: acc.secretKey,
+            })),
         },
         localGanache: {
             url: "http://localhost:8545",
-            accounts: ["0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d"]
+            accounts: ["0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d"],
         },
         coverage: {
-            url: "http://127.0.0.1:8555" // Coverage launches its own ganache-cli client
+            url: "http://127.0.0.1:8555", // Coverage launches its own ganache-cli client
         },
         mainnet: {
-            url: process.env.TESTNET_PROVIDER || ''
+            url: process.env.TESTNET_PROVIDER || "",
         },
         kovan: {
-            url: process.env.TESTNET_PROVIDER || ''
+            url: process.env.TESTNET_PROVIDER || "",
         },
-        bsctest:{
-            url: "https://data-seed-prebsc-1-s1.binance.org:8545/"
-        }
+        bsctest: {
+            url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
+        },
+        bsc: {
+            url: "https://bsc-dataseed.binance.org/",
+        },
     },
     etherscan: {
         // The url for the Etherscan API you want to use.
         url: process.env.ETHERSCAN_URL,
         // Your API key for Etherscan
         // Obtain one at https://etherscan.io/
-        apiKey: process.env.ETHERSCAN_API_KEY
+        apiKey: process.env.ETHERSCAN_API_KEY,
     },
     typechain: {
         outDir: "typechain",
-        target: "ethers-v4"
+        target: "ethers-v4",
     },
     gasReporter: {
         enabled: process.env.REPORT_GAS ? true : false,
         outputFile: "gas-report.txt",
-        noColors: true
+        noColors: true,
     },
     solpp: {
-        defs: ErrorCodes
+        defs: ErrorCodes,
     },
     abiExporter: {
-        only: ['Escrow', 'Portfolios', 'ERC1155Token', 'ERC1155Trade', 'CashMarket', 'Directory', 'IERC20', 'IAggregator']
-    }
+        only: [
+            "Escrow",
+            "Portfolios",
+            "ERC1155Token",
+            "ERC1155Trade",
+            "CashMarket",
+            "Directory",
+            "IERC20",
+            "IAggregator",
+        ],
+    },
 };
