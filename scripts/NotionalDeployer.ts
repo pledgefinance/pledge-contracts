@@ -2,7 +2,7 @@ import {Provider} from "ethers/providers";
 import {readFileSync, writeFileSync} from "fs";
 import {BigNumber, parseUnits} from "ethers/utils";
 import {Wallet, ContractFactory, Contract, ethers} from "ethers";
-import { WeiPerEther } from 'ethers/constants';
+import {WeiPerEther} from "ethers/constants";
 
 import DirectoryArtifact from "../build/Directory.json";
 import EscrowArtifact from "../build/Escrow.json";
@@ -22,19 +22,19 @@ import {Ierc20 as ERC20} from "../typechain/Ierc20";
 import {CashMarket} from "../typechain/CashMarket";
 import {Erc1155Token as ERC1155Token} from "../typechain/Erc1155Token";
 import {Erc1155Trade as ERC1155Trade} from "../typechain/Erc1155Trade";
-import { Ierc1820Registry as IERC1820Registry } from "../typechain/Ierc1820Registry";
-import { Iweth as IWETH } from '../typechain/Iweth';
-import { IAggregator } from '../typechain/IAggregator';
-import { OpenZeppelinUpgradesOwnable } from '../typechain/OpenZeppelinUpgradesOwnable';
-import { CreateProxyFactory } from '../typechain/CreateProxyFactory';
-import { AdminUpgradeabilityProxy } from '../typechain/AdminUpgradeabilityProxy';
+import {Ierc1820Registry as IERC1820Registry} from "../typechain/Ierc1820Registry";
+import {Iweth as IWETH} from "../typechain/Iweth";
+import {IAggregator} from "../typechain/IAggregator";
+import {OpenZeppelinUpgradesOwnable} from "../typechain/OpenZeppelinUpgradesOwnable";
+import {CreateProxyFactory} from "../typechain/CreateProxyFactory";
+import {AdminUpgradeabilityProxy} from "../typechain/AdminUpgradeabilityProxy";
 
 import Debug from "debug";
 import path from "path";
 const log = Debug("notional:deploy");
 
 export interface Environment {
-    deploymentWallet: Wallet,
+    deploymentWallet: Wallet;
     WETH: IWETH;
     ERC1820: IERC1820Registry;
     DAI: ERC20;
@@ -53,7 +53,7 @@ export const enum CoreContracts {
     Escrow = 0,
     Portfolios,
     ERC1155Token,
-    ERC1155Trade
+    ERC1155Trade,
 }
 
 export class NotionalDeployer {
@@ -104,27 +104,25 @@ export class NotionalDeployer {
         }
     };
 
-    private static link = (
-        artifact: any,
-        libraries: Map<string, Contract>
-    ) => {
+    private static link = (artifact: any, libraries: Map<string, Contract>) => {
         for (let k of Object.keys(artifact.linkReferences)) {
             let libname = Object.keys(artifact.linkReferences[k])[0];
             const contract = libraries.get(libname);
             if (contract == null) throw new Error(`${libname} library is not defined`);
 
             for (let offset of artifact.linkReferences[k][libname]) {
-                log(`Linking ${libname} into ${artifact.contractName} using ${contract.address}`)
+                log(`Linking ${libname} into ${artifact.contractName} using ${contract.address}`);
                 const byteOffsetStart = offset.start * 2 + 2;
                 const byteOffsetEnd = byteOffsetStart + offset.length * 2;
-                artifact.bytecode = artifact.bytecode.substring(0, byteOffsetStart) +
+                artifact.bytecode =
+                    artifact.bytecode.substring(0, byteOffsetStart) +
                     contract.address.substr(2) +
                     artifact.bytecode.substring(byteOffsetEnd);
             }
         }
 
         return artifact;
-    }
+    };
 
     public static deployContract = async (
         owner: Wallet,
@@ -133,7 +131,7 @@ export class NotionalDeployer {
         confirmations: number,
         libraries?: Map<string, Contract>
     ) => {
-        console.log(`[deployContract]`)
+        console.log(`[deployContract]`);
         let gasLimit: number | undefined;
         if (process.env.COVERAGE == "true") {
             gasLimit = 20_000_000;
@@ -142,7 +140,7 @@ export class NotionalDeployer {
         } else {
             gasLimit = 20_000_000;
         }
-        log(`Gas limit setting ${process.env.GAS_LIMIT} and ${gasLimit}`)
+        log(`Gas limit setting ${process.env.GAS_LIMIT} and ${gasLimit}`);
 
         let artifact;
         if (typeof name == "string") {
@@ -150,7 +148,7 @@ export class NotionalDeployer {
         } else {
             artifact = name;
         }
-        console.log(`${artifact.contractName}`)
+        console.log(`${artifact.contractName}`);
 
         if (Object.keys(artifact.linkReferences).length > 0) {
             if (libraries == null) throw new Error(`Libraries not defined for ${artifact.contractName}`);
@@ -161,9 +159,9 @@ export class NotionalDeployer {
         console.log(`Getting transaction ${artifact.contractName}...`);
         const txn = factory.getDeployTransaction(...args);
         if (gasLimit == -1) {
-            if (process.env.GAS_PRICE == undefined) throw new Error("Define gas price in")
+            if (process.env.GAS_PRICE == undefined) throw new Error("Define gas price in");
             txn.gasPrice = parseUnits(process.env.GAS_PRICE, "gwei");
-            log(`Gas price: ${txn.gasPrice}`)
+            log(`Gas price: ${txn.gasPrice}`);
         } else {
             txn.gasLimit = gasLimit;
         }
@@ -179,7 +177,7 @@ export class NotionalDeployer {
 
         return {
             contract: contract,
-            bytecodeHash: bytecodeHash
+            bytecodeHash: bytecodeHash,
         };
     };
 
@@ -199,11 +197,18 @@ export class NotionalDeployer {
         let logicAddress;
 
         if (name != "CashMarket") {
-            const { contract: logic, bytecodeHash } = await NotionalDeployer.deployContract(owner, name, [], confirmations, libraries);
+            const {contract: logic, bytecodeHash} = await NotionalDeployer.deployContract(
+                owner,
+                name,
+                [],
+                confirmations,
+                libraries
+            );
             deployedCodeHash.set(name, bytecodeHash);
             logicAddress = logic.address;
         } else {
-            if (cashMarketLogicAddress == undefined) throw new Error("Cash market logic address undefined when deploying cash market")
+            if (cashMarketLogicAddress == undefined)
+                throw new Error("Cash market logic address undefined when deploying cash market");
             logicAddress = cashMarketLogicAddress;
         }
 
@@ -215,25 +220,31 @@ export class NotionalDeployer {
         let proxyAddress;
         if (proxyFactory == undefined) {
             // Deploy a proxy without the proxy factory, this will not have a predicatable address
-            const { contract: proxy } = await NotionalDeployer.deployContract(owner, "AdminUpgradeabilityProxy", [
-                logicAddress,
-                proxyAdmin.address,
-                data
-            ], confirmations);
+            const {contract: proxy} = await NotionalDeployer.deployContract(
+                owner,
+                "AdminUpgradeabilityProxy",
+                [logicAddress, proxyAdmin.address, data],
+                confirmations
+            );
             proxyAddress = proxy.address;
         } else {
+            const nonce = await owner.getTransactionCount();
             if (salt == undefined) {
-                salt = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(artifact.contractName))
+                salt = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(artifact.contractName + String(nonce)));
             }
             proxyAddress = await proxyFactory.getDeploymentAddress(salt, owner.address);
             log(`Using proxy factory, got deployment address of ${proxyAddress} for ${artifact.contractName}`);
             console.log(`Using proxy factory, got deployment address of ${proxyAddress} for ${artifact.contractName}`);
-            await NotionalDeployer.txMined(proxyFactory.deploy(salt, logicAddress, proxyAdmin.address, data), confirmations);
+
+            await NotionalDeployer.txMined(
+                proxyFactory.deploy(salt, logicAddress, proxyAdmin.address, data),
+                confirmations
+            );
         }
 
         log(`Deployed proxy for ${artifact.contractName} at ${proxyAddress}`);
         console.log(`Deployed proxy for ${artifact.contractName} at ${proxyAddress}`);
-        return (new ethers.Contract(proxyAddress, artifact.abi, owner) as unknown) as T
+        return (new ethers.Contract(proxyAddress, artifact.abi, owner) as unknown) as T;
     };
 
     public static txMined = async (tx: Promise<ethers.ContractTransaction>, confirmations: number) => {
@@ -299,15 +310,11 @@ export class NotionalDeployer {
                 confirmations
             );
             cashMarketLogicAddress = contract.address;
-            deployedCodeHash.set("CashMarket", bytecodeHash)
+            deployedCodeHash.set("CashMarket", bytecodeHash);
         }
 
-        const proxyAdmin = (await NotionalDeployer.deployContract(
-            owner,
-            "ProxyAdmin",
-            [],
-            confirmations,
-        )).contract as ProxyAdmin;
+        const proxyAdmin = (await NotionalDeployer.deployContract(owner, "ProxyAdmin", [], confirmations))
+            .contract as ProxyAdmin;
 
         const directory = await NotionalDeployer.deployProxyContract<Directory>(
             owner,
@@ -348,29 +355,29 @@ export class NotionalDeployer {
 
         // If these need to be upgraded we will change the directory. Neither holds state so there is no
         // need for them to be proxies.
-        const erc1155 = await NotionalDeployer.deployProxyContract(
+        const erc1155 = (await NotionalDeployer.deployProxyContract(
             owner,
             "ERC1155Token",
             "address,address",
-            [directory.address,owner.address],
+            [directory.address, owner.address],
             proxyAdmin,
             libraries,
             deployedCodeHash,
             confirmations,
             environment.proxyFactory
-        ) as ERC1155Token;
+        )) as ERC1155Token;
 
-        const erc1155trade = await NotionalDeployer.deployProxyContract(
+        const erc1155trade = (await NotionalDeployer.deployProxyContract(
             owner,
             "ERC1155Trade",
             "address,address",
-            [directory.address,owner.address],
+            [directory.address, owner.address],
             proxyAdmin,
             libraries,
             deployedCodeHash,
             confirmations,
             environment.proxyFactory
-        ) as ERC1155Trade;
+        )) as ERC1155Trade;
 
         // Set dependencies
         log("Setting Notional Contract: Escrow");
@@ -378,20 +385,29 @@ export class NotionalDeployer {
         await NotionalDeployer.txMined(directory.setContract(CoreContracts.Escrow, escrow.address), confirmations);
         log("Setting Notional Contract: Portfolios");
         console.log("Setting Notional Contract: Portfolios");
-        await NotionalDeployer.txMined(directory.setContract(CoreContracts.Portfolios, portfolios.address), confirmations);
+        await NotionalDeployer.txMined(
+            directory.setContract(CoreContracts.Portfolios, portfolios.address),
+            confirmations
+        );
         log("Setting Notional Contract: ERC1155Token");
         console.log("Setting Notional Contract: ERC1155Token");
-        await NotionalDeployer.txMined(directory.setContract(CoreContracts.ERC1155Token, erc1155.address), confirmations);
+        await NotionalDeployer.txMined(
+            directory.setContract(CoreContracts.ERC1155Token, erc1155.address),
+            confirmations
+        );
         log("Setting Notional Contract: ERC1155Trade");
         console.log("Setting Notional Contract: ERC1155Trade");
-        await NotionalDeployer.txMined(directory.setContract(CoreContracts.ERC1155Trade, erc1155trade.address), confirmations);
+        await NotionalDeployer.txMined(
+            directory.setContract(CoreContracts.ERC1155Trade, erc1155trade.address),
+            confirmations
+        );
 
         log("Setting Notional Dependencies: Escrow Dependency");
         console.log("Setting Notional Dependencies: Escrow Dependency");
-        await NotionalDeployer.txMined(directory.setDependencies(CoreContracts.Escrow, [
-            CoreContracts.Portfolios,
-            CoreContracts.ERC1155Trade,
-        ]), confirmations);
+        await NotionalDeployer.txMined(
+            directory.setDependencies(CoreContracts.Escrow, [CoreContracts.Portfolios, CoreContracts.ERC1155Trade]),
+            confirmations
+        );
         log("Setting Notional Dependencies: ERC1155Token Dependency");
         console.log("Setting Notional Dependencies: ERC1155Token Dependency");
         await NotionalDeployer.txMined(
@@ -410,7 +426,7 @@ export class NotionalDeployer {
             directory.setDependencies(CoreContracts.Portfolios, [
                 CoreContracts.Escrow,
                 CoreContracts.ERC1155Token,
-                CoreContracts.ERC1155Trade
+                CoreContracts.ERC1155Trade,
             ]),
             confirmations
         );
@@ -418,11 +434,17 @@ export class NotionalDeployer {
         // Setup some contract defaults
         log("Setting liquidation discounts");
         console.log("Setting liquidation discounts");
-        await NotionalDeployer.txMined(escrow.setDiscounts(liquidationDiscount, settlementDiscount, repoDiscount), confirmations);
+        await NotionalDeployer.txMined(
+            escrow.setDiscounts(liquidationDiscount, settlementDiscount, repoDiscount),
+            confirmations
+        );
 
         log("Setting risk haircuts");
         console.log("Setting risk haircuts");
-        await NotionalDeployer.txMined(portfolios.setHaircuts(liquidityHaircut, fCashHaircut, fCashMaxHaircut), confirmations);
+        await NotionalDeployer.txMined(
+            portfolios.setHaircuts(liquidityHaircut, fCashHaircut, fCashMaxHaircut),
+            confirmations
+        );
 
         return new NotionalDeployer(
             owner,
@@ -452,7 +474,10 @@ export class NotionalDeployer {
         mustInvert: boolean
     ) => {
         log("Listing currency on Escrow");
-        await NotionalDeployer.txMined(this.escrow.listCurrency(tokenAddress, { isERC777, hasTransferFee }), this.defaultConfirmations);
+        await NotionalDeployer.txMined(
+            this.escrow.listCurrency(tokenAddress, {isERC777, hasTransferFee}),
+            this.defaultConfirmations
+        );
         const currencyId = (await this.escrow.addressToCurrencyId(tokenAddress)) as number;
 
         log("Registering new exchange rate to ETH");
@@ -461,14 +486,7 @@ export class NotionalDeployer {
         }
 
         await NotionalDeployer.txMined(
-            this.escrow.addExchangeRate(
-                currencyId,
-                0,
-                rateOracle.address,
-                haircut,
-                rateDecimals,
-                mustInvert
-            ),
+            this.escrow.addExchangeRate(currencyId, 0, rateOracle.address, haircut, rateDecimals, mustInvert),
             this.defaultConfirmations
         );
 
@@ -484,7 +502,7 @@ export class NotionalDeployer {
         transactionFee: BigNumber,
         rateAnchor: number,
         rateScalar: number,
-        precision: number = 1e9,
+        precision: number = 1e9
     ) => {
         const cashMarket = (await NotionalDeployer.deployProxyContract(
             this.owner,
@@ -503,13 +521,8 @@ export class NotionalDeployer {
 
         log("Creating cash group...");
         await NotionalDeployer.txMined(
-            this.portfolios.createCashGroup(
-                numMaturities,
-                maturityLength,
-                precision,
-                currencyId,
-                cashMarket.address
-            ), this.defaultConfirmations
+            this.portfolios.createCashGroup(numMaturities, maturityLength, precision, currencyId, cashMarket.address),
+            this.defaultConfirmations
         );
 
         log("Setting cash market parameters...");
@@ -523,7 +536,7 @@ export class NotionalDeployer {
     public checkDeployedLibraries = async () => {
         const changedLibraries: string[] = [];
 
-        for (let [name, ] of Array.from(this.libraries.entries())) {
+        for (let [name] of Array.from(this.libraries.entries())) {
             const artifact = NotionalDeployer.loadArtifact(name);
             const localBytecodeHash = ethers.utils.keccak256(artifact.bytecode);
             const bytecodeHash = this.deployedCodeHash.get(name);
@@ -533,11 +546,11 @@ export class NotionalDeployer {
         }
 
         return changedLibraries;
-    }
+    };
 
     public deployLibrary = async (name: string, dryRun: boolean) => {
         if (!dryRun) {
-            const {contract, bytecodeHash}  = await NotionalDeployer.deployContract(
+            const {contract, bytecodeHash} = await NotionalDeployer.deployContract(
                 this.owner,
                 name,
                 [],
@@ -548,20 +561,20 @@ export class NotionalDeployer {
             this.deployedCodeHash.set(name, bytecodeHash);
 
             log(`Library ${name} deployed to ${this.libraries.get(name)?.address}`);
-            return this.libraries.get(name)?.address
+            return this.libraries.get(name)?.address;
         } else {
             log(`*** Skipping library deployment of ${name}, dry run ***`);
         }
 
-        return undefined
-    }
+        return undefined;
+    };
 
     public upgradeCashMarket = async (address: string, dryRun: boolean) => {
         const shouldDeployLogic: boolean = await this.upgradeCheckCodeHash("CashMarket");
 
         if (shouldDeployLogic) {
             if (dryRun) {
-                log(`*** Would have deployed new CashMarket logic contract ***`)
+                log(`*** Would have deployed new CashMarket logic contract ***`);
             } else {
                 const upgrade = await this.upgradeDeployLogic("CashMarket");
                 log(`Setting cash market logic address to: ${upgrade.address}`);
@@ -576,7 +589,7 @@ export class NotionalDeployer {
         }
 
         return shouldDeployLogic ? this.cashMarketLogicAddress : undefined;
-    }
+    };
 
     public upgradeContract = async (name: CoreContracts, dryRun: boolean) => {
         const contractName = this.coreContractToName(name);
@@ -588,10 +601,10 @@ export class NotionalDeployer {
         if (!dryRun) {
             const upgrade = await this.upgradeDeployLogic(contractName);
             await this.upgradeProxy(contractName, contract.address, upgrade.address, dryRun);
-            return upgrade.address
+            return upgrade.address;
         } else {
             log(`*** Would have deployed ${contractName} in dry run ***`);
-            return undefined
+            return undefined;
         }
     };
 
@@ -632,25 +645,38 @@ export class NotionalDeployer {
     private async upgradeProxy(contractName: string, proxyAddress: string, newLogicAddress: string, dryRun: boolean) {
         const proxyAdminOwner = await this.proxyAdmin.owner();
         if (dryRun) {
-            log(`Did not upgrade ${contractName} proxy at ${proxyAddress} to new logic address ${newLogicAddress}, dry run.`)
+            log(
+                `Did not upgrade ${contractName} proxy at ${proxyAddress} to new logic address ${newLogicAddress}, dry run.`
+            );
             return;
         }
 
         if (proxyAdminOwner != this.owner.address) {
             log(`Cannot upgrade proxy, must use proxyAdmin owner address ${proxyAdminOwner}`);
         } else {
-            const proxy = new ethers.Contract(proxyAddress, AdminUpgradeabilityProxyArtifact.abi, this.owner) as AdminUpgradeabilityProxy;
-            await NotionalDeployer.txMined(this.proxyAdmin.upgrade(proxy.address, newLogicAddress), this.defaultConfirmations);
+            const proxy = new ethers.Contract(
+                proxyAddress,
+                AdminUpgradeabilityProxyArtifact.abi,
+                this.owner
+            ) as AdminUpgradeabilityProxy;
+            await NotionalDeployer.txMined(
+                this.proxyAdmin.upgrade(proxy.address, newLogicAddress),
+                this.defaultConfirmations
+            );
             log(`Proxy Admin upgraded ${contractName}`);
         }
     }
 
     private transferOwnerOfContract = async (address: string, newOwner: string) => {
-        const ownable = new Contract(address, OpenZeppelinUpgradesOwnableArtifact.abi, this.owner) as OpenZeppelinUpgradesOwnable;
+        const ownable = new Contract(
+            address,
+            OpenZeppelinUpgradesOwnableArtifact.abi,
+            this.owner
+        ) as OpenZeppelinUpgradesOwnable;
 
         log(`Transfering ownership of contract at ${address} to ${newOwner}`);
         await NotionalDeployer.txMined(ownable.transferOwnership(newOwner), this.defaultConfirmations);
-    }
+    };
 
     public transferOwner = async (newOwner: string) => {
         log(`Transfering ownership of Escrow`);
@@ -678,7 +704,7 @@ export class NotionalDeployer {
         log(`Transfering ownership of ProxyAdmin`);
         // This allows newOwner to upgrade proxies
         await this.transferOwnerOfContract(this.proxyAdmin.address, newOwner);
-    }
+    };
 
     public static restoreFromFile = async (path: string, owner: Wallet) => {
         const addresses = JSON.parse(readFileSync(path, "utf8"));
@@ -686,7 +712,11 @@ export class NotionalDeployer {
         const escrow = new Contract(addresses.escrow, EscrowArtifact.abi, owner) as Escrow;
         const portfolios = new Contract(addresses.portfolios, PortfoliosArtifact.abi, owner) as Portfolios;
         const proxyAdmin = new Contract(addresses.proxyAdmin, ProxyAdminArtifact.abi, owner) as ProxyAdmin;
-        const createProxyFactory = new Contract(addresses.proxyFactory, CreateProxyFactoryArtifact.abi, owner) as CreateProxyFactory;
+        const createProxyFactory = new Contract(
+            addresses.proxyFactory,
+            CreateProxyFactoryArtifact.abi,
+            owner
+        ) as CreateProxyFactory;
         const directory = new Contract(addresses.directory, DirectoryArtifact.abi, owner) as Directory;
         const erc1155 = new Contract(addresses.erc1155, ERC1155TokenArtifact.abi, owner) as ERC1155Token;
         const erc1155trade = new Contract(addresses.erc1155trade, ERC1155TradeArtifact.abi, owner) as ERC1155Trade;
@@ -695,12 +725,12 @@ export class NotionalDeployer {
             const contract = new Contract(addresses.libraries[name], NotionalDeployer.loadArtifact(name).abi, owner);
             obj.set(name, contract);
             return obj;
-        }, new Map<string, Contract>())
+        }, new Map<string, Contract>());
 
         const deployedCodeHash = Object.keys(addresses.deployedCodeHash).reduce((obj, name) => {
             obj.set(name, addresses.deployedCodeHash[name]);
             return obj;
-        }, new Map<string, string>())
+        }, new Map<string, string>());
 
         return new NotionalDeployer(
             owner,
@@ -725,16 +755,14 @@ export class NotionalDeployer {
         const libraries = Array.from(this.libraries.entries()).reduce((obj, [name, contract]) => {
             obj[name] = contract.address;
             return obj;
-        }, {} as {[name: string]: string})
+        }, {} as {[name: string]: string});
 
         const deployedCodeHash = Array.from(this.deployedCodeHash.entries()).reduce((obj, [name, hash]) => {
             obj[name] = hash;
             return obj;
-        }, {} as {[name: string]: string})
+        }, {} as {[name: string]: string});
 
-        const gitHash = require('child_process')
-            .execSync('git rev-parse HEAD')
-            .toString().trim()
+        const gitHash = require("child_process").execSync("git rev-parse HEAD").toString().trim();
 
         const addresses = {
             chainId: network.chainId,
@@ -751,7 +779,7 @@ export class NotionalDeployer {
             defaultConfirmations: this.defaultConfirmations,
             libraries: libraries,
             deployedCodeHash: deployedCodeHash,
-            gitHash: gitHash
+            gitHash: gitHash,
         };
         writeFileSync(path, JSON.stringify(addresses, null, 2));
     }
