@@ -24,7 +24,7 @@ config({path: envPath});
 const BLOCK_TIME_LIMIT = 2_000_000_000;
 
 async function main() {
-  if (process.env.DEPLOY_CHAIN_ID as string != "1337") {
+  if (process.env.DEPLOY_CHAIN_ID as string != "97") {
     log(`Not running on local environment, using ${process.env.DEPLOY_CHAIN_ID as string} exiting`);
     exit(1);
   }
@@ -37,14 +37,11 @@ async function main() {
   const notional = await NotionalDeployer.restoreFromFile(path.join(__dirname, "../" + process.env.CONTRACTS_FILE as string), account);
   const daiToken = new Contract(await notional.escrow.currencyIdToAddress(1), ERC20Artifact.abi, account) as Erc20;
 
+  // FIXME: Temp reduce to prevent running out of tokens
   await txMined(daiToken.approve(notional.escrow.address, MaxUint256));
-  await txMined(notional.escrow.deposit(daiToken.address, parseEther("6000000")));
+  await txMined(notional.escrow.deposit(daiToken.address, parseEther("10000")));
   log("Adding $2M liquidity to 1M Dai market");
-  await initializeLiquidity(1, notional, account, 0, parseEther("2000000"), parseEther("1800000"));
-  log("Adding $2M liquidity to 3M Dai market");
-  await initializeLiquidity(2, notional, account, 0, parseEther("2000000"), parseEther("2000000"));
-  log("Adding $2M liquidity to 6M Dai market");
-  await initializeLiquidity(2, notional, account, 1, parseEther("2000000"), parseEther("2200000"));
+  await initializeLiquidity(1, notional, account, 0, parseEther("10000"), parseEther("8000"));
 
   const chainId = process.env.DEPLOY_CHAIN_ID as string;
   if (chainId == "1337") {
