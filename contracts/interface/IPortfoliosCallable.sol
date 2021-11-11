@@ -15,13 +15,33 @@ interface IPortfoliosCallable {
 
     function settleMaturedAssetsBatch(address[] calldata account) external;
 
-    function upsertAccountAsset(address account, Common.Asset calldata assets, bool checkFreeCollateral) external;
+    function upsertAccountAsset(
+        address account,
+        Common.Asset calldata assets,
+        bool checkFreeCollateral
+    ) external;
 
-    function upsertAccountAssetBatch(address account, Common.Asset[] calldata assets, bool checkFreeCollateral) external;
+    function upsertAccountAssetBatch(
+        address account,
+        Common.Asset[] calldata assets,
+        bool checkFreeCollateral
+    ) external;
 
-    function mintfCashPair(address payer, address receiver, uint8 cashGroupId, uint32 maturity, uint128 notional) external;
+    function mintfCashPair(
+        address payer,
+        address receiver,
+        uint8 cashGroupId,
+        uint32 maturity,
+        uint128 notional
+    ) external;
 
-    function freeCollateral(address account) external returns (int256, int256[] memory, int256[] memory);
+    function freeCollateral(address account)
+        external
+        returns (
+            int256,
+            int256[] memory,
+            int256[] memory
+        );
 
     function freeCollateralViewAggregateOnly(address account) external view returns (int256);
 

@@ -8,5 +8,5 @@ interface IWETH {
 
     function withdraw(uint256) external;
 
-    function approve(address guy, uint wad) external returns (bool);
+    function approve(address guy, uint256 wad) external returns (bool);
 }

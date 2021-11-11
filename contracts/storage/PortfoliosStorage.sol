@@ -5,9 +5,9 @@ import "../utils/Common.sol";
 import "./StorageSlot.sol";
 
 library PortfoliosStorageSlot {
-    bytes32 internal constant S_FCASH_MAX_HAIRCUT = $$(keccak256('notional.portfolios.fCashMaxHaircut'));
-    bytes32 internal constant S_FCASH_HAIRCUT = $$(keccak256('notional.portfolios.fCashHaircut'));
-    bytes32 internal constant S_LIQUIDITY_HAIRCUT = $$(keccak256('notional.portfolios.liquidityHaircut'));
+    bytes32 internal constant S_FCASH_MAX_HAIRCUT = $$(keccak256("notional.portfolios.fCashMaxHaircut"));
+    bytes32 internal constant S_FCASH_HAIRCUT = $$(keccak256("notional.portfolios.fCashHaircut"));
+    bytes32 internal constant S_LIQUIDITY_HAIRCUT = $$(keccak256("notional.portfolios.liquidityHaircut"));
 
     function _fCashMaxHaircut() internal view returns (uint128) {
         return uint128(StorageSlot._getStorageUint(S_FCASH_MAX_HAIRCUT));
@@ -55,6 +55,7 @@ contract PortfoliosStorage {
     // This is the max number of assets that can be in a portfolio. This is to prevent idiosyncratic assets from
     // building up in portfolios such that they can't be liquidated due to gas cost restrictions.
     uint256 public G_MAX_ASSETS;
+
     /****** Governance Parameters ******/
 
     function G_FCASH_MAX_HAIRCUT() public view returns (uint128) {

@@ -26,10 +26,10 @@ contract Directory is OpenZeppelinUpgradesOwnable, Initializable {
      * @param name the contract that dependencies depend on
      * @param dependencies a list of contracts that depend on name
      */
-    function setDependencies(
-        Governed.CoreContracts name,
-        Governed.CoreContracts[] calldata dependencies
-    ) external onlyOwner {
+    function setDependencies(Governed.CoreContracts name, Governed.CoreContracts[] calldata dependencies)
+        external
+        onlyOwner
+    {
         address contractAddress = contracts[uint256(name)];
         for (uint256 i; i < dependencies.length; i++) {
             Governed(contracts[uint256(dependencies[i])]).setContract(name, contractAddress);

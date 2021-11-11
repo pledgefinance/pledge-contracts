@@ -9,7 +9,6 @@ import "../interface/IAggregator.sol";
 
 import "@openzeppelin/contracts/utils/SafeCast.sol";
 
-
 library ExchangeRate {
     using SafeInt256 for int256;
     using SafeMath for uint256;
@@ -53,12 +52,10 @@ library ExchangeRate {
         // er.buffer is in Common.DECIMAL precision
         // We use uint256 to do the calculation and then cast back to int256 to avoid overflows.
         int256 result = int256(
-            SafeCast.toUint128(rate
-                .mul(absBalance)
+            SafeCast.toUint128(
+                rate
+                .mul(absBalance).mul(buffer ? er.buffer : Common.DECIMALS).div(er.rateDecimals).div(baseDecimals)
                 // Buffer has 18 decimal places of precision
-                .mul(buffer ? er.buffer : Common.DECIMALS)
-                .div(er.rateDecimals)
-                .div(baseDecimals)
             )
         );
 
@@ -84,12 +81,7 @@ library ExchangeRate {
         // er.buffer is in Common.DECIMAL precision
         // We use uint256 to do the calculation and then cast back to int256 to avoid overflows.
         int256 result = int256(
-            SafeCast.toUint128(rate
-                .mul(absBalance)
-                .mul(baseDecimals)
-                .div(Common.DECIMALS)
-                .div(er.rateDecimals)
-            )
+            SafeCast.toUint128(rate.mul(absBalance).mul(baseDecimals).div(Common.DECIMALS).div(er.rateDecimals))
         );
 
         return balance > 0 ? result : result.neg();
@@ -110,7 +102,11 @@ library ExchangeRate {
     /**
      * @notice Calculates the exchange rate between two currencies via ETH. Returns the rate.
      */
-    function _exchangeRate(Rate memory baseER, Rate memory quoteER, uint16 quote) internal view returns (uint256) {
+    function _exchangeRate(
+        Rate memory baseER,
+        Rate memory quoteER,
+        uint16 quote
+    ) internal view returns (uint256) {
         uint256 rate = _fetchExchangeRate(baseER, false);
 
         if (quote != 0) {
@@ -121,5 +117,4 @@ library ExchangeRate {
 
         return rate;
     }
-
 }

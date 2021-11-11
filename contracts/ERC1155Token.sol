@@ -16,7 +16,6 @@ import "./CashMarket.sol";
  * same id. `CASH_PAYER` tokens are not transferrable because they have negative value.
  */
 contract ERC1155Token is ERC1155Base {
-
     /**
      * @notice Transfers tokens between from and to addresses.
      * @dev - INVALID_ADDRESS: destination address cannot be 0
@@ -128,14 +127,6 @@ contract ERC1155Token is ERC1155Base {
         (uint8 cashGroupId, uint16 instrumentId, uint32 maturity) = Common.decodeAssetId(id);
         require(maturity > block.timestamp, $$(ErrorCode(CANNOT_TRANSFER_MATURED_ASSET)));
 
-        Portfolios().transferAccountAsset(
-            from,
-            to,
-            assetType,
-            cashGroupId,
-            instrumentId,
-            maturity,
-            value
-        );
+        Portfolios().transferAccountAsset(from, to, assetType, cashGroupId, instrumentId, maturity, value);
     }
 }

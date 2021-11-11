@@ -1,12 +1,12 @@
-import { fixture, wallets, fixtureLoader, provider, fastForwardToMaturity } from "./fixtures";
-import { Wallet } from "ethers";
-import { WeiPerEther } from "ethers/constants";
+import {fixture, wallets, fixtureLoader, provider, fastForwardToMaturity} from "./fixtures";
+import {Wallet} from "ethers";
+import {WeiPerEther} from "ethers/constants";
 
 import {Ierc20 as ERC20} from "../typechain/Ierc20";
 import {CashMarket} from "../typechain/CashMarket";
 import {Escrow} from "../typechain/Escrow";
-import { parseEther } from 'ethers/utils';
-import { BLOCK_TIME_LIMIT } from './testUtils';
+import {parseEther} from "ethers/utils";
+import {BLOCK_TIME_LIMIT} from "./testUtils";
 
 describe("Gas", () => {
     let dai: ERC20;
@@ -37,29 +37,89 @@ describe("Gas", () => {
     });
 
     it("trading", async () => {
-      await escrow.deposit(dai.address, parseEther("4000000"));
-      await futureCash.addLiquidity(maturities[0], parseEther("500000"), parseEther("500000"), 0, 100_000_000, BLOCK_TIME_LIMIT);
-      await futureCash.addLiquidity(maturities[0], parseEther("500000"), parseEther("500000"), 0, 100_000_000, BLOCK_TIME_LIMIT);
-      await futureCash.addLiquidity(maturities[1], parseEther("500000"), parseEther("500000"), 0, 100_000_000, BLOCK_TIME_LIMIT);
-      await futureCash.addLiquidity(maturities[1], parseEther("500000"), parseEther("500000"), 0, 100_000_000, BLOCK_TIME_LIMIT);
-      await futureCash.addLiquidity(maturities[2], parseEther("500000"), parseEther("500000"), 0, 100_000_000, BLOCK_TIME_LIMIT);
-      await futureCash.addLiquidity(maturities[2], parseEther("500000"), parseEther("500000"), 0, 100_000_000, BLOCK_TIME_LIMIT);
-      await futureCash.addLiquidity(maturities[3], parseEther("500000"), parseEther("500000"), 0, 100_000_000, BLOCK_TIME_LIMIT);
-      await futureCash.addLiquidity(maturities[3], parseEther("500000"), parseEther("500000"), 0, 100_000_000, BLOCK_TIME_LIMIT);
+        await escrow.deposit(dai.address, parseEther("4000000"));
+        await futureCash.addLiquidity(
+            maturities[0],
+            parseEther("500000"),
+            parseEther("500000"),
+            0,
+            100_000_000,
+            BLOCK_TIME_LIMIT
+        );
+        await futureCash.addLiquidity(
+            maturities[0],
+            parseEther("500000"),
+            parseEther("500000"),
+            0,
+            100_000_000,
+            BLOCK_TIME_LIMIT
+        );
+        await futureCash.addLiquidity(
+            maturities[1],
+            parseEther("500000"),
+            parseEther("500000"),
+            0,
+            100_000_000,
+            BLOCK_TIME_LIMIT
+        );
+        await futureCash.addLiquidity(
+            maturities[1],
+            parseEther("500000"),
+            parseEther("500000"),
+            0,
+            100_000_000,
+            BLOCK_TIME_LIMIT
+        );
+        await futureCash.addLiquidity(
+            maturities[2],
+            parseEther("500000"),
+            parseEther("500000"),
+            0,
+            100_000_000,
+            BLOCK_TIME_LIMIT
+        );
+        await futureCash.addLiquidity(
+            maturities[2],
+            parseEther("500000"),
+            parseEther("500000"),
+            0,
+            100_000_000,
+            BLOCK_TIME_LIMIT
+        );
+        await futureCash.addLiquidity(
+            maturities[3],
+            parseEther("500000"),
+            parseEther("500000"),
+            0,
+            100_000_000,
+            BLOCK_TIME_LIMIT
+        );
+        await futureCash.addLiquidity(
+            maturities[3],
+            parseEther("500000"),
+            parseEther("500000"),
+            0,
+            100_000_000,
+            BLOCK_TIME_LIMIT
+        );
 
-      await futureCash.removeLiquidity(maturities[1], parseEther("500000"), BLOCK_TIME_LIMIT);
-      await futureCash.removeLiquidity(maturities[2], parseEther("500000"), BLOCK_TIME_LIMIT);
-      await futureCash.removeLiquidity(maturities[3], parseEther("500000"), BLOCK_TIME_LIMIT);
+        await futureCash.removeLiquidity(maturities[1], parseEther("500000"), BLOCK_TIME_LIMIT);
+        await futureCash.removeLiquidity(maturities[2], parseEther("500000"), BLOCK_TIME_LIMIT);
+        await futureCash.removeLiquidity(maturities[3], parseEther("500000"), BLOCK_TIME_LIMIT);
 
-      await escrow.connect(wallet).depositEth({value: parseEther("10000")});
-      await futureCash.connect(wallet).takeCurrentCash(maturities[0], parseEther("10000"), BLOCK_TIME_LIMIT, 100_000_000);
-      await futureCash.connect(wallet).takeCurrentCash(maturities[1], parseEther("10000"), BLOCK_TIME_LIMIT, 100_000_000);
-      await futureCash.connect(wallet).takeCurrentCash(maturities[2], parseEther("10000"), BLOCK_TIME_LIMIT, 100_000_000);
+        await escrow.connect(wallet).depositEth({value: parseEther("10000")});
+        await futureCash
+            .connect(wallet)
+            .takeCurrentCash(maturities[0], parseEther("10000"), BLOCK_TIME_LIMIT, 100_000_000);
+        await futureCash
+            .connect(wallet)
+            .takeCurrentCash(maturities[1], parseEther("10000"), BLOCK_TIME_LIMIT, 100_000_000);
+        await futureCash
+            .connect(wallet)
+            .takeCurrentCash(maturities[2], parseEther("10000"), BLOCK_TIME_LIMIT, 100_000_000);
 
-      await futureCash.connect(wallet).takefCash(maturities[1], parseEther("10000"), BLOCK_TIME_LIMIT, 0);
-      await futureCash.connect(wallet).takefCash(maturities[2], parseEther("10000"), BLOCK_TIME_LIMIT, 0);
-      await futureCash.connect(wallet).takefCash(maturities[3], parseEther("10000"), BLOCK_TIME_LIMIT, 0);
+        await futureCash.connect(wallet).takefCash(maturities[1], parseEther("10000"), BLOCK_TIME_LIMIT, 0);
+        await futureCash.connect(wallet).takefCash(maturities[2], parseEther("10000"), BLOCK_TIME_LIMIT, 0);
+        await futureCash.connect(wallet).takefCash(maturities[3], parseEther("10000"), BLOCK_TIME_LIMIT, 0);
     }).timeout(5_000_000);
-
 }).timeout(5_000_000);
-

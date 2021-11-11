@@ -4,17 +4,17 @@ import {Wallet, providers} from "ethers";
 import {NotionalDeployer} from "../scripts/NotionalDeployer";
 import defaultAccounts from "./defaultAccounts.json";
 import {parseEther, BigNumber} from "ethers/utils";
-import { deployLocal } from '../scripts/deployEnvironment';
-import { WeiPerEther } from 'ethers/constants';
-import { MockAggregator } from '../mocks/MockAggregator';
-import { debug } from 'debug';
+import {deployLocal} from "../scripts/deployEnvironment";
+import {WeiPerEther} from "ethers/constants";
+import {MockAggregator} from "../mocks/MockAggregator";
+import {debug} from "debug";
 
 const log = debug("test:fixtures");
 
 // Silences multiple initialize signature errors
 ethers.errors.setLogLevel("error");
 export const provider = waffle.provider;
-export const wallets = defaultAccounts.map(acc => {
+export const wallets = defaultAccounts.map((acc) => {
     return new Wallet(acc.secretKey, provider);
 });
 export const fixtureLoader = createFixtureLoader(provider, [wallets[0]]);
@@ -22,7 +22,7 @@ export const CURRENCY = {
     ETH: 0,
     DAI: 1,
     USDC: 2,
-    WBTC: 3
+    WBTC: 3,
 };
 
 /**
@@ -55,8 +55,8 @@ export async function fixture(provider: providers.Provider, [owner]: Wallet[]) {
         false,
         false,
         WeiPerEther, // TODO: check this
-        false 
-    )
+        false
+    );
 
     log("Deploying test cash market");
     const cashMarket = await notional.deployCashMarket(
@@ -75,7 +75,7 @@ export async function fixture(provider: providers.Provider, [owner]: Wallet[]) {
         cashMarket,
         escrow: notional.escrow,
         owner,
-        chainlink: environment.DAIETHOracle as unknown as MockAggregator,
+        chainlink: (environment.DAIETHOracle as unknown) as MockAggregator,
         portfolios: notional.portfolios,
         proxyAdmin: notional.proxyAdmin,
         erc1155: notional.erc1155,
@@ -83,7 +83,7 @@ export async function fixture(provider: providers.Provider, [owner]: Wallet[]) {
         directory: notional.directory,
         notional: notional,
         weth: environment.WETH,
-        environment: environment
+        environment: environment,
     };
 }
 

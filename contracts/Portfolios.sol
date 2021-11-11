@@ -64,7 +64,7 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
 
     /**
      * @notice Notice for setting haircut amount for liquidity tokens
-     * @param liquidityHaircut amount of haircut applied to liquidity token claims 
+     * @param liquidityHaircut amount of haircut applied to liquidity token claims
      * @param fCashHaircut amount of negative haircut applied to fcash
      * @param fCashMaxHaircut max haircut amount applied to fcash
      */
@@ -76,7 +76,12 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
      * @param numCurrencies initializes the number of currencies listed on the escrow contract
      * @param maxAssets max assets that a portfolio can hold
      */
-    function initialize(address directory, address owner, uint16 numCurrencies, uint256 maxAssets) external initializer {
+    function initialize(
+        address directory,
+        address owner,
+        uint16 numCurrencies,
+        uint256 maxAssets
+    ) external initializer {
         Governed.initialize(directory, owner);
 
         // We must initialize this here because it cannot be a constant.
@@ -97,7 +102,11 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
      * @param fCashHaircut amount of negative haircut applied to fcash
      * @param fCashMaxHaircut max haircut amount applied to fcash
      */
-    function setHaircuts(uint128 liquidityHaircut, uint128 fCashHaircut, uint128 fCashMaxHaircut) external onlyOwner {
+    function setHaircuts(
+        uint128 liquidityHaircut,
+        uint128 fCashHaircut,
+        uint128 fCashMaxHaircut
+    ) external onlyOwner {
         PortfoliosStorageSlot._setLiquidityHaircut(liquidityHaircut);
         PortfoliosStorageSlot._setfCashHaircut(fCashHaircut);
         PortfoliosStorageSlot._setfCashMaxHaircut(fCashMaxHaircut);
@@ -187,10 +196,7 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
         uint16 currency,
         address cashMarket
     ) external onlyOwner {
-        require(
-            cashGroupId != 0 && cashGroupId <= currentCashGroupId,
-            $$(ErrorCode(INVALID_CASH_GROUP))
-        );
+        require(cashGroupId != 0 && cashGroupId <= currentCashGroupId, $$(ErrorCode(INVALID_CASH_GROUP)));
         require(Escrow().isValidCurrency(currency), $$(ErrorCode(INVALID_CURRENCY)));
 
         Common.CashGroup storage i = cashGroups[cashGroupId];
@@ -215,7 +221,7 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
      * @param account to retrieve
      * @return an array representing the account's portfolio
      */
-    function getAssets(address account) public override view returns (Common.Asset[] memory) {
+    function getAssets(address account) public view override returns (Common.Asset[] memory) {
         return _accountAssets[account];
     }
 
@@ -234,7 +240,7 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
      * @param cashGroupId to retrieve
      * @return the given cash group
      */
-    function getCashGroup(uint8 cashGroupId) public override view returns (Common.CashGroup memory) {
+    function getCashGroup(uint8 cashGroupId) public view override returns (Common.CashGroup memory) {
         return cashGroups[cashGroupId];
     }
 
@@ -243,7 +249,7 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
      * @param groupIds array of cash group ids to retrieve
      * @return an array of cash group objects
      */
-    function getCashGroups(uint8[] memory groupIds) public override view returns (Common.CashGroup[] memory) {
+    function getCashGroups(uint8[] memory groupIds) public view override returns (Common.CashGroup[] memory) {
         Common.CashGroup[] memory results = new Common.CashGroup[](groupIds.length);
 
         for (uint256 i; i < groupIds.length; i++) {
@@ -268,10 +274,13 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
         uint8 cashGroupId,
         uint16 instrumentId,
         uint32 maturity
-    ) public override view returns (Common.Asset memory, uint256) {
+    ) public view override returns (Common.Asset memory, uint256) {
         Common.Asset[] storage portfolio = _accountAssets[account];
         (
-            bool found, uint256 index, /* uint128 */, /* bool */ 
+            bool found,
+            uint256 index, /* uint128 */ /* bool */
+            ,
+
         ) = _searchAsset(portfolio, assetType, cashGroupId, instrumentId, maturity, false);
 
         if (!found) return (NULL_ASSET, index);
@@ -287,7 +296,15 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
      * @param account address of account to get free collateral for
      * @return (net free collateral position, an array of the net currency available)
      */
-    function freeCollateral(address account) public override returns (int256, int256[] memory, int256[] memory) {
+    function freeCollateral(address account)
+        public
+        override
+        returns (
+            int256,
+            int256[] memory,
+            int256[] memory
+        )
+    {
         // This will emit an event, which is the correct action here.
         settleMaturedAssets(account);
 
@@ -297,14 +314,22 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
     function freeCollateralAggregateOnly(address account) public override returns (int256) {
         // This will emit an event, which is the correct action here.
         settleMaturedAssets(account);
-        
-        (int256 fc, /* int256[] memory */, /* int256[] memory */) = freeCollateralView(account);
+
+        (
+            int256 fc, /* int256[] memory */ /* int256[] memory */
+            ,
+
+        ) = freeCollateralView(account);
 
         return fc;
     }
 
-    function freeCollateralViewAggregateOnly(address account) public override view returns (int256) {
-        (int256 fc, /* int256[] memory */, /* int256[] memory */) = freeCollateralView(account);
+    function freeCollateralViewAggregateOnly(address account) public view override returns (int256) {
+        (
+            int256 fc, /* int256[] memory */ /* int256[] memory */
+            ,
+
+        ) = freeCollateralView(account);
 
         return fc;
     }
@@ -328,13 +353,14 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
 
         (int256 fc, int256[] memory netCurrencyAvailable, int256[] memory cashClaims) = freeCollateralView(account);
 
-        return Common.FreeCollateralFactors(
-            fc,
-            netCurrencyAvailable[localCurrency],
-            netCurrencyAvailable[collateralCurrency],
-            cashClaims[localCurrency],
-            cashClaims[collateralCurrency]
-        );
+        return
+            Common.FreeCollateralFactors(
+                fc,
+                netCurrencyAvailable[localCurrency],
+                netCurrencyAvailable[collateralCurrency],
+                cashClaims[localCurrency],
+                cashClaims[collateralCurrency]
+            );
     }
 
     /**
@@ -343,26 +369,41 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
      * @param account account in question
      * @return (net free collateral position, an array of the net currency available)
      */
-    function freeCollateralView(address account) public view returns (int256, int256[] memory, int256[] memory) {
+    function freeCollateralView(address account)
+        public
+        view
+        returns (
+            int256,
+            int256[] memory,
+            int256[] memory
+        )
+    {
         int256[] memory balances = Escrow().getBalances(account);
         return _freeCollateral(account, balances);
     }
 
-    function _freeCollateral(address account, int256[] memory balances) internal view returns (int256, int256[] memory, int256[] memory) {
+    function _freeCollateral(address account, int256[] memory balances)
+        internal
+        view
+        returns (
+            int256,
+            int256[] memory,
+            int256[] memory
+        )
+    {
         Common.Asset[] memory portfolio = _accountAssets[account];
         int256[] memory cashClaims = new int256[](balances.length);
 
         if (portfolio.length > 0) {
             // This returns the net requirement in each currency held by the portfolio.
-            Common.Requirement[] memory requirements = RiskFramework.getRequirement(
-                portfolio,
-                address(this)
-            );
+            Common.Requirement[] memory requirements = RiskFramework.getRequirement(portfolio, address(this));
 
             for (uint256 i; i < requirements.length; i++) {
                 uint256 currency = uint256(requirements[i].currency);
                 cashClaims[currency] = cashClaims[currency].add(requirements[i].cashClaim);
-                balances[currency] = balances[currency].add(requirements[i].cashClaim).add(requirements[i].netfCashValue);
+                balances[currency] = balances[currency].add(requirements[i].cashClaim).add(
+                    requirements[i].netfCashValue
+                );
             }
         }
 
@@ -402,7 +443,9 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
 
         if (checkFreeCollateral) {
             (
-                int256 fc, /* int256[] memory */, /* int256[] memory */
+                int256 fc, /* int256[] memory */ /* int256[] memory */
+                ,
+
             ) = freeCollateral(account);
             require(fc >= 0, $$(ErrorCode(INSUFFICIENT_FREE_COLLATERAL)));
         }
@@ -444,7 +487,9 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
 
         if (checkFreeCollateral) {
             (
-                int256 fc, /* int256[] memory */, /* int256[] memory */
+                int256 fc, /* int256[] memory */ /* int256[] memory */
+                ,
+
             ) = freeCollateral(account);
             require(fc >= 0, $$(ErrorCode(INSUFFICIENT_FREE_COLLATERAL)));
         }
@@ -475,7 +520,10 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
 
         Common.Asset[] storage fromPortfolio = _accountAssets[from];
         (
-            bool found, uint256 index, /* uint128 */, /* bool */
+            bool found,
+            uint256 index, /* uint128 */ /* bool */
+            ,
+
         ) = _searchAsset(fromPortfolio, assetType, cashGroupId, instrumentId, maturity, false);
         require(found, $$(ErrorCode(ASSET_NOT_FOUND)));
 
@@ -483,15 +531,13 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
         _reduceAsset(fromPortfolio, fromPortfolio[index], index, value);
 
         Common.Asset[] storage toPortfolio = _accountAssets[to];
-        _upsertAsset(
-            toPortfolio,
-            Common.Asset(cashGroupId, instrumentId, maturity, assetType, rate, value),
-            false
-        );
+        _upsertAsset(toPortfolio, Common.Asset(cashGroupId, instrumentId, maturity, assetType, rate, value), false);
 
         // All transfers of assets must pass a free collateral check.
         (
-            int256 fc, /* int256[] memory */, /* int256[] memory */
+            int256 fc, /* int256[] memory */ /* int256[] memory */
+            ,
+
         ) = freeCollateral(from);
         require(fc >= 0, $$(ErrorCode(INSUFFICIENT_FREE_COLLATERAL)));
 
@@ -532,34 +578,23 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
         }
         require(maturity <= maxMaturity, $$(ErrorCode(PAST_MAX_MATURITY)));
 
-
         _upsertAsset(
             _accountAssets[payer],
-            Common.Asset(
-                cashGroupId,
-                0,
-                maturity,
-                Common.getCashPayer(),
-                fcg.precision,
-                notional
-            ),
+            Common.Asset(cashGroupId, 0, maturity, Common.getCashPayer(), fcg.precision, notional),
             false
         );
 
         _upsertAsset(
             _accountAssets[receiver],
-            Common.Asset(
-                cashGroupId,
-                0,
-                maturity,
-                Common.getCashReceiver(),
-                fcg.precision,
-                notional
-            ),
+            Common.Asset(cashGroupId, 0, maturity, Common.getCashReceiver(), fcg.precision, notional),
             false
         );
 
-        (int256 fc, /* int256[] memory */, /* int256[] memory */) = freeCollateral(payer);
+        (
+            int256 fc, /* int256[] memory */ /* int256[] memory */
+            ,
+
+        ) = freeCollateral(payer);
         require(fc >= 0, $$(ErrorCode(INSUFFICIENT_FREE_COLLATERAL)));
 
         // NOTE: we do not check that the receiver has sufficient free collateral because their collateral
@@ -687,7 +722,13 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
         // Sorting the portfolio ensures that as we iterate through it we see each cash group
         // in batches. However, this means that we won't be able to track the indexes to remove correctly.
         Common.Asset[] memory portfolio = Common._sortPortfolio(_accountAssets[account]);
-        TradePortfolioState memory state = _tradePortfolio(account, currency, amount, Common.getLiquidityToken(), portfolio);
+        TradePortfolioState memory state = _tradePortfolio(
+            account,
+            currency,
+            amount,
+            Common.getLiquidityToken(),
+            portfolio
+        );
 
         return state.amountRemaining;
     }
@@ -799,7 +840,15 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
         uint128 liquidatorPayment,
         uint128 amountRemaining,
         Common.Asset memory asset
-    ) internal view returns (uint128, uint128, uint128) {
+    )
+        internal
+        view
+        returns (
+            uint128,
+            uint128,
+            uint128
+        )
+    {
         // blockTime is in here because of the stack size
         uint32 blockTime = uint32(block.timestamp);
         uint128 notionalToTransfer;
@@ -816,11 +865,7 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
         assetValue = uint128(tmp);
 
         if (assetValue >= amountRemaining) {
-            notionalToTransfer = SafeCast.toUint128(
-                uint256(asset.notional)
-                    .mul(amountRemaining)
-                    .div(assetValue)
-            );
+            notionalToTransfer = SafeCast.toUint128(uint256(asset.notional).mul(amountRemaining).div(assetValue));
             liquidatorPayment = liquidatorPayment.add(amountRemaining);
             amountRemaining = 0;
         } else {
@@ -977,7 +1022,16 @@ contract Portfolios is PortfoliosStorage, IPortfoliosCallable, Governed {
         uint16 instrumentId,
         uint32 maturity,
         bool findCounterparty
-    ) internal view returns (bool, uint256, uint128, bool) {
+    )
+        internal
+        view
+        returns (
+            bool,
+            uint256,
+            uint128,
+            bool
+        )
+    {
         uint256 length = portfolio.length;
         if (length == 0) {
             return (false, length, 0, false);

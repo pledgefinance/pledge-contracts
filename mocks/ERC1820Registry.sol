@@ -27,7 +27,6 @@
  */
 pragma solidity ^0.5.12;
 
-
 // IV is value needed to have a vanity address starting with '0x1820'.
 // IV: 53759
 
@@ -40,7 +39,6 @@ interface ERC1820ImplementerInterface {
     /// @return ERC1820_ACCEPT_MAGIC only if the contract implements 'interfaceHash' for the address 'addr'.
     function canImplementInterfaceForAddress(bytes32 interfaceHash, address addr) external view returns (bytes32);
 }
-
 
 /// @title ERC1820 Pseudo-introspection Registry Contract
 /// @author Jordi Baylina and Jacques Dafflon
@@ -90,7 +88,11 @@ contract ERC1820Registry {
     /// @param _interfaceHash Keccak256 hash of the name of the interface as a string.
     /// E.g., 'web3.utils.keccak256("ERC777TokensRecipient")' for the 'ERC777TokensRecipient' interface.
     /// @param _implementer Contract address implementing '_interfaceHash' for '_addr'.
-    function setInterfaceImplementer(address _addr, bytes32 _interfaceHash, address _implementer) external {
+    function setInterfaceImplementer(
+        address _addr,
+        bytes32 _interfaceHash,
+        address _implementer
+    ) external {
         address addr = _addr == address(0) ? msg.sender : _addr;
         require(getManager(addr) == msg.sender, "Not the manager");
 

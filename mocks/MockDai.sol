@@ -34,15 +34,15 @@ contract MockDai is IERC20, OpenZeppelinUpgradesOwnable {
      */
     event Approval(address indexed owner, address indexed spender, uint256 value);
 
-    function name() external override view returns (string memory) {
+    function name() external view override returns (string memory) {
         return "Dai";
     }
 
-    function symbol() external override view returns (string memory) {
+    function symbol() external view override returns (string memory) {
         return "DAI";
     }
 
-    function decimals() external override view returns (uint8) {
+    function decimals() external view override returns (uint8) {
         return 18;
     }
 
@@ -138,7 +138,11 @@ contract MockDai is IERC20, OpenZeppelinUpgradesOwnable {
     /**
      * @dev internal transfer function
      */
-    function _transfer(address sender, address recipient, uint256 amount) internal {
+    function _transfer(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) internal {
         require(sender != address(0), "ERC20: transfer from zero address");
         require(recipient != address(0), "ERC20: send to zero address");
 
@@ -150,7 +154,11 @@ contract MockDai is IERC20, OpenZeppelinUpgradesOwnable {
     /**
      * @dev internal approval function
      */
-    function _approve(address owner, address spender, uint256 amount) internal {
+    function _approve(
+        address owner,
+        address spender,
+        uint256 amount
+    ) internal {
         require(owner != address(0), "ERC20: approve owner of zero address");
         require(spender != address(0), "ERC20: approve spender of zero address");
 

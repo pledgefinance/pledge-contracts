@@ -157,18 +157,21 @@ contract ERC1155Trade is ERC1155Base {
     ) external override {
         require(
             msg.sender == BRIDGE_PROXY ||
-            (from == msg.sender && isApprovedForAll(to, from)) ||
-            (isApprovedForAll(from, msg.sender) && isApprovedForAll(to, msg.sender)),
+                (from == msg.sender && isApprovedForAll(to, from)) ||
+                (isApprovedForAll(from, msg.sender) && isApprovedForAll(to, msg.sender)),
             $$(ErrorCode(UNAUTHORIZED_CALLER))
         );
         require(value <= Common.MAX_UINT_128, $$(ErrorCode(OVER_MAX_UINT128_AMOUNT)));
-
 
         Common.Deposit[] memory deposits;
         if (data.length > 0) deposits = abi.decode(data, (Common.Deposit[]));
 
         bytes1 assetType = Common.getAssetType(id);
-        (uint8 cashGroupId, /* uint16 */ , uint32 maturity) = Common.decodeAssetId(id);
+        (
+            uint8 cashGroupId, /* uint16 */
+            ,
+            uint32 maturity
+        ) = Common.decodeAssetId(id);
 
         if (Common.isCashPayer(assetType)) {
             // (payer, receiver) = (to, from);
@@ -190,10 +193,10 @@ contract ERC1155Trade is ERC1155Base {
     }
 
     function safeBatchTransferFrom(
-        address /* _from */,
-        address /* _to */,
-        uint256[] calldata /* _ids */,
-        uint256[] calldata /* _values */,
+        address, /* _from */
+        address, /* _to */
+        uint256[] calldata, /* _ids */
+        uint256[] calldata, /* _values */
         bytes calldata /* _data */
     ) external override {
         revert($$(ErrorCode(UNIMPLEMENTED)));
@@ -219,7 +222,12 @@ contract ERC1155Trade is ERC1155Base {
 
                 tradeRecord[i].currencyId = fcg.currency;
                 tradeRecord[i].tradeType = Common.TradeType.TakeCurrentCash;
-                tradeRecord[i].cash = fc.takeCurrentCashOnBehalf(account, trades[i].maturity, trades[i].amount, maxRate);
+                tradeRecord[i].cash = fc.takeCurrentCashOnBehalf(
+                    account,
+                    trades[i].maturity,
+                    trades[i].amount,
+                    maxRate
+                );
             } else if (trades[i].tradeType == Common.TradeType.TakefCash) {
                 uint32 minRate;
                 if (trades[i].slippageData.length == 32) {
@@ -267,11 +275,7 @@ contract ERC1155Trade is ERC1155Base {
         // residuals from the trade record.
         for (uint256 i; i < withdraws.length; i++) {
             if (withdraws[i].amount == 0) {
-                withdraws[i].amount = _calculateWithdrawAmount(
-                    withdraws[i].currencyId,
-                    tradeRecord,
-                    deposits
-                );
+                withdraws[i].amount = _calculateWithdrawAmount(withdraws[i].currencyId, tradeRecord, deposits);
             }
         }
     }
@@ -294,12 +298,16 @@ contract ERC1155Trade is ERC1155Base {
         for (uint256 i; i < tradeRecord.length; i++) {
             if (tradeRecord[i].currencyId != currencyId) continue;
 
-            if (tradeRecord[i].tradeType == Common.TradeType.TakeCurrentCash
-                || tradeRecord[i].tradeType == Common.TradeType.RemoveLiquidity) {
+            if (
+                tradeRecord[i].tradeType == Common.TradeType.TakeCurrentCash ||
+                tradeRecord[i].tradeType == Common.TradeType.RemoveLiquidity
+            ) {
                 // This is the amount of cash that was taken from the market
                 depositResidual = depositResidual.add(tradeRecord[i].cash);
-            } else if (tradeRecord[i].tradeType == Common.TradeType.TakefCash
-                || tradeRecord[i].tradeType == Common.TradeType.AddLiquidity) {
+            } else if (
+                tradeRecord[i].tradeType == Common.TradeType.TakefCash ||
+                tradeRecord[i].tradeType == Common.TradeType.AddLiquidity
+            ) {
                 // This is the residual from the deposit that was not put into the market. We floor this value at
                 // zero to avoid an overflow.
                 depositResidual = depositResidual < tradeRecord[i].cash ? 0 : depositResidual - tradeRecord[i].cash;

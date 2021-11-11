@@ -25,7 +25,7 @@ abstract contract ERC1155Base is Governed, IERC1155, IERC165 {
      * @dev skip
      * @param interfaceId the hash signature of the interface id
      */
-    function supportsInterface(bytes4 interfaceId) external override view returns (bool) {
+    function supportsInterface(bytes4 interfaceId) external view override returns (bool) {
         if (interfaceId == ERC1155_INTERFACE) return true;
     }
 
@@ -36,7 +36,7 @@ abstract contract ERC1155Base is Governed, IERC1155, IERC165 {
      * @param id ID of the token
      * @return The account's balance of the token type requested
      */
-    function balanceOf(address account, uint256 id) external override view returns (uint256) {
+    function balanceOf(address account, uint256 id) external view override returns (uint256) {
         bytes1 assetType = Common.getAssetType(id);
 
         (uint8 cashGroupId, uint16 instrumentId, uint32 maturity) = Common.decodeAssetId(id);
@@ -60,8 +60,8 @@ abstract contract ERC1155Base is Governed, IERC1155, IERC165 {
      */
     function balanceOfBatch(address[] calldata accounts, uint256[] calldata ids)
         external
-        override
         view
+        override
         returns (uint256[] memory)
     {
         uint256[] memory results = new uint256[](accounts.length);
@@ -138,7 +138,7 @@ abstract contract ERC1155Base is Governed, IERC1155, IERC165 {
      * @param operator address of the operator
      * @return true for complete appoval, false otherwise
      */
-    function isApprovedForAll(address owner, address operator) public override view returns (bool) {
+    function isApprovedForAll(address owner, address operator) public view override returns (bool) {
         return operators[owner][operator];
     }
 }

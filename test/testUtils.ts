@@ -1,14 +1,14 @@
-import { Escrow } from "../typechain/Escrow";
-import { CashMarket } from "../typechain/CashMarket";
-import { Portfolios } from "../typechain/Portfolios";
-import { Wallet } from "ethers";
-import { MockAggregator } from "../mocks/MockAggregator";
+import {Escrow} from "../typechain/Escrow";
+import {CashMarket} from "../typechain/CashMarket";
+import {Portfolios} from "../typechain/Portfolios";
+import {Wallet} from "ethers";
+import {MockAggregator} from "../mocks/MockAggregator";
 import {Ierc20 as ERC20} from "../typechain/Ierc20";
-import { WeiPerEther } from "ethers/constants";
-import { BigNumber, parseEther } from "ethers/utils";
-import { provider, CURRENCY, fastForwardToMaturity } from "./fixtures";
+import {WeiPerEther} from "ethers/constants";
+import {BigNumber, parseEther} from "ethers/utils";
+import {provider, CURRENCY, fastForwardToMaturity} from "./fixtures";
 import {Iweth as IWETH} from "../typechain/Iweth";
-import { debug } from 'debug';
+import {debug} from "debug";
 
 const log = debug("test:testutils");
 
@@ -18,7 +18,7 @@ export const IMPLIED_RATE_LIMIT = 60_000_000;
 export enum AssetType {
     LIQUIDITY_TOKEN = "0xac",
     CASH_PAYER = "0x98",
-    CASH_RECEIVER = "0xa8"
+    CASH_RECEIVER = "0xa8",
 }
 
 export class TestUtils {
@@ -50,15 +50,12 @@ export class TestUtils {
         }
     }
 
-    public async lendAndWithdraw(
-        wallet: Wallet,
-        lendfCash: BigNumber,
-        maturityOffset = 0,
-        impliedRateLimit = 0
-    ) {
+    public async lendAndWithdraw(wallet: Wallet, lendfCash: BigNumber, maturityOffset = 0, impliedRateLimit = 0) {
         const maturities = await this.futureCash.getActiveMaturities();
         await this.escrow.connect(wallet).deposit(this.token.address, lendfCash);
-        await this.futureCash.connect(wallet).takefCash(maturities[maturityOffset], lendfCash, BLOCK_TIME_LIMIT, impliedRateLimit);
+        await this.futureCash
+            .connect(wallet)
+            .takefCash(maturities[maturityOffset], lendfCash, BLOCK_TIME_LIMIT, impliedRateLimit);
         const balance = await this.escrow.cashBalances(this.currencyId, wallet.address);
         await this.escrow.connect(wallet).withdraw(this.token.address, balance);
 
@@ -73,8 +70,8 @@ export class TestUtils {
         impliedRateLimit = IMPLIED_RATE_LIMIT
     ) {
         const exchangeRate = await this.chainlink.latestAnswer();
-        const erObj = (await this.escrow.getExchangeRate(this.currencyId, CURRENCY.ETH));
-        const tokenDecimals = (await this.escrow.currencyIdToDecimals(this.currencyId));
+        const erObj = await this.escrow.getExchangeRate(this.currencyId, CURRENCY.ETH);
+        const tokenDecimals = await this.escrow.currencyIdToDecimals(this.currencyId);
         const maturities = await this.futureCash.getActiveMaturities();
 
         const ethAmount = borrowFutureCash
@@ -94,9 +91,7 @@ export class TestUtils {
         await this.futureCash
             .connect(wallet)
             .takeCurrentCash(maturities[maturityOffset], borrowFutureCash, BLOCK_TIME_LIMIT, impliedRateLimit);
-        const collateralAmount = (await this.escrow.cashBalances(this.currencyId, wallet.address)).sub(
-            beforeAmount
-        );
+        const collateralAmount = (await this.escrow.cashBalances(this.currencyId, wallet.address)).sub(beforeAmount);
 
         // Remove the dai so only the ETH is collateralizing the CASH_PAYER
         await this.escrow.connect(wallet).withdraw(this.token.address, collateralAmount);
@@ -106,7 +101,7 @@ export class TestUtils {
 
     public async isCollateralized(account: Wallet) {
         const fc = await this.portfolios.freeCollateralView(account.address);
-        log(`Free Collateral: ${fc}`)
+        log(`Free Collateral: ${fc}`);
         return fc[0].gte(0);
     }
 
@@ -114,7 +109,7 @@ export class TestUtils {
         const totalEthBalance = await this.weth.balanceOf(this.escrow.address);
         let escrowEthBalance = new BigNumber(0);
         for (let a of accounts) {
-            log(`Eth Balance: ${a.address}: ${await this.escrow.cashBalances(CURRENCY.ETH, a.address)}`)
+            log(`Eth Balance: ${a.address}: ${await this.escrow.cashBalances(CURRENCY.ETH, a.address)}`);
             escrowEthBalance = escrowEthBalance.add(await this.escrow.cashBalances(CURRENCY.ETH, a.address));
         }
 
@@ -127,22 +122,20 @@ export class TestUtils {
         await this.portfolios.settleMaturedAssetsBatch(accounts.map((a) => a.address));
 
         const totalDaiBalance = await this.token.balanceOf(this.escrow.address);
-        log(`Total Dai Balance: ${totalDaiBalance}`)
+        log(`Total Dai Balance: ${totalDaiBalance}`);
         let escrowDaiBalance = new BigNumber(0);
         for (let a of accounts) {
-            log(`Cash Balance: ${a.address}: ${await this.escrow.cashBalances(this.currencyId, a.address)}`)
+            log(`Cash Balance: ${a.address}: ${await this.escrow.cashBalances(this.currencyId, a.address)}`);
             escrowDaiBalance = escrowDaiBalance.add(await this.escrow.cashBalances(this.currencyId, a.address));
         }
 
-        log(`Future Cash Market: ${await this.escrow.cashBalances(this.currencyId, this.futureCash.address)}`)
+        log(`Future Cash Market: ${await this.escrow.cashBalances(this.currencyId, this.futureCash.address)}`);
         escrowDaiBalance = escrowDaiBalance.add(
             await this.escrow.cashBalances(this.currencyId, this.futureCash.address)
         );
 
         if (additionalMarket !== undefined) {
-            escrowDaiBalance = escrowDaiBalance.add(
-                await this.escrow.cashBalances(this.currencyId, additionalMarket)
-            );
+            escrowDaiBalance = escrowDaiBalance.add(await this.escrow.cashBalances(this.currencyId, additionalMarket));
         }
 
         log(`Balance Integrity: ${totalDaiBalance}, ${escrowDaiBalance}`);
@@ -151,7 +144,7 @@ export class TestUtils {
 
     public async checkMarketIntegrity(accounts: Wallet[], maturities: number[]) {
         const markets = await Promise.all(
-            maturities.map(m => {
+            maturities.map((m) => {
                 return this.futureCash.markets(m);
             })
         );
@@ -170,13 +163,13 @@ export class TestUtils {
 
         const allAssets = (
             await Promise.all(
-                accounts.map(a => {
+                accounts.map((a) => {
                     return this.portfolios.getAssets(a.address);
                 })
             )
         )
             .reduce((acc, val) => acc.concat(val), [])
-            .filter(t => {
+            .filter((t) => {
                 return t.cashGroupId === id;
             });
 
@@ -256,7 +249,7 @@ export class TestUtils {
     public async mineAndSettleAccount(accounts: Wallet[]) {
         const maturities = await this.futureCash.getActiveMaturities();
         await fastForwardToMaturity(provider, maturities[0]);
-        const addresses = accounts.map(a => a.address);
+        const addresses = accounts.map((a) => a.address);
         await this.portfolios.settleMaturedAssetsBatch(addresses);
     }
 
@@ -275,16 +268,12 @@ export class TestUtils {
         }
         const payerCashBalanceBefore = await this.escrow.cashBalances(currencyId, payer.address);
 
-        await this.escrow
-            .connect(operator)
-            .settleCashBalance(currencyId, collateralCurrencyId, payer.address, balance);
+        await this.escrow.connect(operator).settleCashBalance(currencyId, collateralCurrencyId, payer.address, balance);
 
         const payerCashBalanceAfter = await this.escrow.cashBalances(currencyId, payer.address);
 
-        log(`Settle Cash Balance: ${payerCashBalanceBefore}, ${payerCashBalanceAfter}`)
-        return [
-            payerCashBalanceAfter.sub(payerCashBalanceBefore).eq(balance)
-        ];
+        log(`Settle Cash Balance: ${payerCashBalanceBefore}, ${payerCashBalanceAfter}`);
+        return [payerCashBalanceAfter.sub(payerCashBalanceBefore).eq(balance)];
     }
 
     public async setupSellFutureCash(
@@ -294,7 +283,6 @@ export class TestUtils {
         liquidatefCashAmount?: BigNumber,
         currency = CURRENCY.DAI
     ) {
-
         // This sets up a negative cash balance
         const maturities = await this.futureCash.getActiveMaturities();
         if (borrowAmount) {
@@ -306,18 +294,14 @@ export class TestUtils {
         if (tradefCashAmount) {
             log(`Setup sell future cash, calling takefCash with ${tradefCashAmount} for trading`);
             await this.escrow.connect(wallet).deposit(this.token.address, tradefCashAmount);
-            await this.futureCash
-                .connect(wallet)
-                .takefCash(maturities[1], tradefCashAmount, BLOCK_TIME_LIMIT, 0);
+            await this.futureCash.connect(wallet).takefCash(maturities[1], tradefCashAmount, BLOCK_TIME_LIMIT, 0);
         }
 
         if (liquidatefCashAmount) {
             await this.escrow.connect(wallet).deposit(this.token.address, liquidatefCashAmount);
-            await this.futureCash
-                .connect(wallet)
-                .takefCash(maturities[2], liquidatefCashAmount, BLOCK_TIME_LIMIT, 0);
+            await this.futureCash.connect(wallet).takefCash(maturities[2], liquidatefCashAmount, BLOCK_TIME_LIMIT, 0);
 
-            const market = await this.futureCash.getMarket(maturities[2])
+            const market = await this.futureCash.getMarket(maturities[2]);
             await this.futureCash.removeLiquidity(maturities[2], market.totalLiquidity, BLOCK_TIME_LIMIT);
         }
 
@@ -344,31 +328,24 @@ export class TestUtils {
         }
     }
 
-    public async getfCashValue(
-        notional: BigNumber,
-        settleAmount: BigNumber,
-        maturity: number,
-        blockTime: number
-    ) {
+    public async getfCashValue(notional: BigNumber, settleAmount: BigNumber, maturity: number, blockTime: number) {
         const haircut = await this.portfolios.G_FCASH_HAIRCUT();
         const maxHaircut = await this.portfolios.G_FCASH_MAX_HAIRCUT();
 
-        let futureCashValue = notional
-            .sub(notional
+        let futureCashValue = notional.sub(
+            notional
                 .mul(haircut)
                 .mul(maturity - blockTime)
                 .div(31536000)
                 .div(WeiPerEther)
-            );
+        );
 
-        const maxValue = notional
-            .mul(maxHaircut)
-            .div(WeiPerEther);
+        const maxValue = notional.mul(maxHaircut).div(WeiPerEther);
 
         if (futureCashValue.gt(maxValue)) futureCashValue = maxValue;
 
         const remaining = notional.sub(notional.mul(settleAmount).div(futureCashValue));
 
-        return [futureCashValue, remaining]
+        return [futureCashValue, remaining];
     }
 }

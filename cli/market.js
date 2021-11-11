@@ -1,32 +1,32 @@
-require('dotenv').config()
+require("dotenv").config();
 
-const marketABI = require('../abi/CashMarket.json')
+const marketABI = require("../abi/CashMarket.json");
 
-const marketAddress = process.env.MARKET_ADDRESS
+const marketAddress = process.env.MARKET_ADDRESS;
 
 async function getRate(maturity, web3) {
-  let marketContract = new web3.eth.Contract(marketABI, marketAddress)
-  let rate = await marketContract.methods.getRate(maturity).call()
+  let marketContract = new web3.eth.Contract(marketABI, marketAddress);
+  let rate = await marketContract.methods.getRate(maturity).call();
 
-  return rate
+  return rate;
 }
 
 async function getActiveMaturities(web3) {
-  let marketContract = new web3.eth.Contract(marketABI, marketAddress)
-  let maturities = await marketContract.methods.getActiveMaturities().call()
+  let marketContract = new web3.eth.Contract(marketABI, marketAddress);
+  let maturities = await marketContract.methods.getActiveMaturities().call();
 
-  return maturities
+  return maturities;
 }
 
 async function getMarket(maturity, web3) {
-  let marketContract = new web3.eth.Contract(marketABI, marketAddress)
-  let market = await marketContract.methods.getMarket(maturity).call()
+  let marketContract = new web3.eth.Contract(marketABI, marketAddress);
+  let market = await marketContract.methods.getMarket(maturity).call();
 
-  return market
+  return market;
 }
 
 module.exports = {
   getRate,
   getActiveMaturities,
-  getMarket
-}
+  getMarket,
+};

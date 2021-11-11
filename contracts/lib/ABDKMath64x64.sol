@@ -4,7 +4,6 @@
  */
 pragma solidity ^0.6.0;
 
-
 /**
  * Smart contract library of mathematical functions operating with signed
  * 64.64-bit fixed point numbers.    Signed 64.64-bit fixed point number is

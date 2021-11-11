@@ -93,7 +93,7 @@ contract CashMarket is Governed {
      */
     function setParameters(
         uint8 cashGroupId,
-        uint16 /* instrumentId */,
+        uint16, /* instrumentId */
         uint32 precision,
         uint32 maturityLength,
         uint32 numMaturities,
@@ -185,13 +185,7 @@ contract CashMarket is Governed {
      * @param fCash amount of fCash tokens added
      * @param cash amount of cash tokens added
      */
-    event AddLiquidity(
-        address indexed account,
-        uint32 maturity,
-        uint128 tokens,
-        uint128 fCash,
-        uint128 cash
-    );
+    event AddLiquidity(address indexed account, uint32 maturity, uint128 tokens, uint128 fCash, uint128 cash);
 
     /**
      * @notice Emitted when liquidity is removed from a maturity
@@ -201,13 +195,7 @@ contract CashMarket is Governed {
      * @param fCash amount of fCash tokens removed
      * @param cash amount of cash tokens removed
      */
-    event RemoveLiquidity(
-        address indexed account,
-        uint32 maturity,
-        uint128 tokens,
-        uint128 fCash,
-        uint128 cash
-    );
+    event RemoveLiquidity(address indexed account, uint32 maturity, uint128 tokens, uint128 fCash, uint128 cash);
 
     /**
      * @notice Emitted when cash is taken from a maturity
@@ -326,11 +314,9 @@ contract CashMarket is Governed {
             // G_RATE_ANCHOR is stored as the annualized rate. Here we normalize it to the rate that is required given the
             // time to maturity. (RATE_ANCHOR - 1) * timeToMaturity / SECONDS_IN_YEAR + 1
             market.rateAnchor = SafeCast.toUint32(
-                uint256(G_RATE_ANCHOR)
-                    .sub(INSTRUMENT_PRECISION)
-                    .mul(timeToMaturity)
-                    .div(Common.SECONDS_IN_YEAR)
-                    .add(INSTRUMENT_PRECISION)
+                uint256(G_RATE_ANCHOR).sub(INSTRUMENT_PRECISION).mul(timeToMaturity).div(Common.SECONDS_IN_YEAR).add(
+                    INSTRUMENT_PRECISION
+                )
             );
 
             market.totalfCash = maxfCash;
@@ -338,8 +324,8 @@ contract CashMarket is Governed {
             market.totalLiquidity = cash;
             // We have to initialize this to the exchange rate implied by the proportion of cash to fCash.
             uint32 impliedRate = _getImpliedRateRequire(market, timeToMaturity);
-            require(minImpliedRate <= maxImpliedRate 
-                && minImpliedRate <= impliedRate && impliedRate <= maxImpliedRate,
+            require(
+                minImpliedRate <= maxImpliedRate && minImpliedRate <= impliedRate && impliedRate <= maxImpliedRate,
                 $$(ErrorCode(OUT_OF_IMPLIED_RATE_BOUNDS))
             );
             market.lastImpliedRate = impliedRate;
@@ -364,11 +350,12 @@ contract CashMarket is Governed {
 
             // If this proportion has moved beyond what the liquidity provider is willing to pay then we
             // will revert here. The implied rate will not change when liquidity is added.
-            require(minImpliedRate <= maxImpliedRate 
-                && minImpliedRate <= market.lastImpliedRate && market.lastImpliedRate <= maxImpliedRate,
+            require(
+                minImpliedRate <= maxImpliedRate &&
+                    minImpliedRate <= market.lastImpliedRate &&
+                    market.lastImpliedRate <= maxImpliedRate,
                 $$(ErrorCode(OUT_OF_IMPLIED_RATE_BOUNDS))
             );
-
         }
 
         markets[maturity] = market;
@@ -381,24 +368,10 @@ contract CashMarket is Governed {
         // represents the obligation that offsets the fCash in the market.
         Common.Asset[] memory assets = new Common.Asset[](2);
         // This is the liquidity token
-        assets[0] = Common.Asset(
-            CASH_GROUP,
-            0,
-            maturity,
-            Common.getLiquidityToken(),
-            0,
-            liquidityTokenAmount
-        );
+        assets[0] = Common.Asset(CASH_GROUP, 0, maturity, Common.getLiquidityToken(), 0, liquidityTokenAmount);
 
         // This is the CASH_PAYER
-        assets[1] = Common.Asset(
-            CASH_GROUP,
-            0,
-            maturity,
-            Common.getCashPayer(),
-            0,
-            fCash
-        );
+        assets[1] = Common.Asset(CASH_GROUP, 0, maturity, Common.getCashPayer(), 0, fCash);
 
         emit AddLiquidity(account, maturity, liquidityTokenAmount, fCash, cash);
 
@@ -423,12 +396,7 @@ contract CashMarket is Governed {
         uint128 amount,
         uint32 maxTime
     ) external returns (uint128) {
-        (Common.Asset[] memory assets, uint128 cash) = _removeLiquidity(
-            msg.sender,
-            maturity,
-            amount,
-            maxTime
-        );
+        (Common.Asset[] memory assets, uint128 cash) = _removeLiquidity(msg.sender, maturity, amount, maxTime);
 
         // This function call will check if the account in question actually has
         // enough liquidity tokens to remove.
@@ -504,14 +472,7 @@ contract CashMarket is Governed {
         );
 
         // This is the CASH_RECEIVER
-        assets[1] = Common.Asset(
-            CASH_GROUP,
-            0,
-            maturity,
-            Common.getCashReceiver(),
-            0,
-            fCashAmount
-        );
+        assets[1] = Common.Asset(CASH_GROUP, 0, maturity, Common.getCashReceiver(), 0, fCashAmount);
 
         emit RemoveLiquidity(account, maturity, amount, fCashAmount, cash);
         return (assets, cash);
@@ -606,7 +567,11 @@ contract CashMarket is Governed {
 
         uint32 timeToMaturity = maturity - blockTime;
 
-        ( /* market */, uint128 cash) = _tradeCalculation(interimMarket, int256(fCashAmount), timeToMaturity);
+        (
+            ,
+            /* market */
+            uint128 cash
+        ) = _tradeCalculation(interimMarket, int256(fCashAmount), timeToMaturity);
         // On trade failure, we will simply return 0
         uint128 fee = _calculateTransactionFee(cash, timeToMaturity);
         return cash.sub(fee);
@@ -696,14 +661,7 @@ contract CashMarket is Governed {
         Escrow().withdrawFromMarket(account, CASH_GROUP, cash, fee);
 
         // The sender now has an obligation to pay cash at maturity.
-        Common.Asset memory asset = Common.Asset(
-            CASH_GROUP,
-            0,
-            maturity,
-            Common.getCashPayer(),
-            0,
-            fCashAmount
-        );
+        Common.Asset memory asset = Common.Asset(CASH_GROUP, 0, maturity, Common.getCashPayer(), 0, fCashAmount);
 
         emit TakeCurrentCash(account, maturity, fCashAmount, cash, fee);
 
@@ -739,7 +697,11 @@ contract CashMarket is Governed {
 
         uint32 timeToMaturity = maturity - blockTime;
 
-        ( /* market */, uint128 cash) = _tradeCalculation(interimMarket, int256(fCashAmount).neg(), timeToMaturity);
+        (
+            ,
+            /* market */
+            uint128 cash
+        ) = _tradeCalculation(interimMarket, int256(fCashAmount).neg(), timeToMaturity);
         uint128 fee = _calculateTransactionFee(cash, timeToMaturity);
         // On trade failure, we will simply return 0
         return cash.add(fee);
@@ -828,14 +790,7 @@ contract CashMarket is Governed {
         // insert trade call below.
         Escrow().depositIntoMarket(account, CASH_GROUP, cash, fee);
 
-        Common.Asset memory asset = Common.Asset(
-            CASH_GROUP,
-            0,
-            maturity,
-            Common.getCashReceiver(),
-            0,
-            fCashAmount
-        );
+        Common.Asset memory asset = Common.Asset(CASH_GROUP, 0, maturity, Common.getCashReceiver(), 0, fCashAmount);
 
         emit TakefCash(account, maturity, fCashAmount, cash, fee);
 
@@ -869,12 +824,7 @@ contract CashMarket is Governed {
         // Here we've sold cash in excess of what was required, so we credit the remaining back
         // to the account that was holding the trade.
         if (cash > cashRequired) {
-            Escrow().withdrawFromMarket(
-                account,
-                CASH_GROUP,
-                cash - cashRequired,
-                0
-            );
+            Escrow().withdrawFromMarket(account, CASH_GROUP, cash - cashRequired, 0);
 
             cash = cashRequired;
         }
@@ -894,7 +844,14 @@ contract CashMarket is Governed {
         uint128 cashRequired,
         uint128 maxTokenAmount,
         uint32 maturity
-    ) external returns (uint128, uint128, uint128) {
+    )
+        external
+        returns (
+            uint128,
+            uint128,
+            uint128
+        )
+    {
         require(calledByPortfolios(), $$(ErrorCode(UNAUTHORIZED_CALLER)));
         Market memory market = markets[maturity];
 
@@ -1000,13 +957,10 @@ contract CashMarket is Governed {
     /*********** Internal Methods ********************/
 
     function _calculateTransactionFee(uint128 cash, uint32 timeToMaturity) internal view returns (uint128) {
-        return SafeCast.toUint128(
-            uint256(cash)
-                .mul(G_TRANSACTION_FEE)
-                .mul(timeToMaturity)
-                .div(G_MATURITY_LENGTH)
-                .div(Common.DECIMALS)
-        );
+        return
+            SafeCast.toUint128(
+                uint256(cash).mul(G_TRANSACTION_FEE).mul(timeToMaturity).div(G_MATURITY_LENGTH).div(Common.DECIMALS)
+            );
     }
 
     function _updateMarket(uint32 maturity, int256 fCashAmount) internal returns (uint128) {
@@ -1133,10 +1087,9 @@ contract CashMarket is Governed {
 
         if (!success) return (0, false);
 
-        int256 rateDifference = int256(impliedRate)
-            .sub(market.lastImpliedRate)
-            .mul(timeToMaturity)
-            .div(G_MATURITY_LENGTH);
+        int256 rateDifference = int256(impliedRate).sub(market.lastImpliedRate).mul(timeToMaturity).div(
+            G_MATURITY_LENGTH
+        );
         int256 newRateAnchor = int256(market.rateAnchor).sub(rateDifference);
 
         if (newRateAnchor < 0 || newRateAnchor > Common.MAX_UINT_32) return (0, false);
@@ -1154,9 +1107,7 @@ contract CashMarket is Governed {
         if (!success) return (0, false);
         if (exchangeRate < INSTRUMENT_PRECISION) return (0, false);
 
-        uint256 rate = uint256(exchangeRate - INSTRUMENT_PRECISION)
-            .mul(G_MATURITY_LENGTH)
-            .div(timeToMaturity);
+        uint256 rate = uint256(exchangeRate - INSTRUMENT_PRECISION).mul(G_MATURITY_LENGTH).div(timeToMaturity);
 
         if (rate > Common.MAX_UINT_32) return (0, false);
 
@@ -1223,7 +1174,7 @@ contract CashMarket is Governed {
         // This is ln(1e18), subtract this to scale proportion back. There is no potential for overflow
         // in int256 space with the addition and subtraction here.
         int256 rate = ((abdkResult - LN_1E18) / rateScalar) + market.rateAnchor;
-        
+
         // These checks simply prevent math errors, not negative interest rates.
         if (rate < 0) {
             return (0, false);

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.6.0;
 
-
 library SafeUInt128 {
     function add(uint128 a, uint128 b) internal pure returns (uint128) {
         uint128 c = a + b;

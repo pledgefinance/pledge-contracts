@@ -95,7 +95,12 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
      * @param account the account that was liquidated
      * @param amountRecollateralized the amount of local currency that recollateralized
      */
-    event Liquidate(uint16 indexed localCurrency, uint16 collateralCurrency, address account, uint128 amountRecollateralized);
+    event Liquidate(
+        uint16 indexed localCurrency,
+        uint16 collateralCurrency,
+        address account,
+        uint128 amountRecollateralized
+    );
 
     /**
      * @notice Notice of a successful batch liquidation. `msg.sender` will be the liquidator.
@@ -118,12 +123,7 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
      * @param payer the account that paid in the settlement
      * @param settledAmount the amount settled between the parties
      */
-    event SettleCash(
-        uint16 localCurrency,
-        uint16 collateralCurrency,
-        address indexed payer,
-        uint128 settledAmount
-    );
+    event SettleCash(uint16 localCurrency, uint16 collateralCurrency, address indexed payer, uint128 settledAmount);
 
     /**
      * @notice Notice of a successful batch cash settlement. `msg.sender` will be the settler.
@@ -132,12 +132,7 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
      * @param payers the accounts that paid in the settlement
      * @param settledAmounts the amounts settled between the parties
      */
-    event SettleCashBatch(
-        uint16 localCurrency,
-        uint16 collateralCurrency,
-        address[] payers,
-        uint128[] settledAmounts
-    );
+    event SettleCashBatch(uint16 localCurrency, uint16 collateralCurrency, address[] payers, uint128[] settledAmounts);
 
     /**
      * @notice Emitted when liquidation and settlement discounts are set
@@ -176,7 +171,11 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
      * @param settlement discount applied to settlement
      * @param repoIncentive incentive to repo liquidity tokens
      */
-    function setDiscounts(uint128 liquidation, uint128 settlement, uint128 repoIncentive) external onlyOwner {
+    function setDiscounts(
+        uint128 liquidation,
+        uint128 settlement,
+        uint128 repoIncentive
+    ) external onlyOwner {
         EscrowStorageSlot._setLiquidationDiscount(liquidation);
         EscrowStorageSlot._setSettlementDiscount(settlement);
         EscrowStorageSlot._setLiquidityTokenRepoIncentive(repoIncentive);
@@ -241,12 +240,7 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
         // that if this is not the case, it opens up the possibility that free collateral actually ends up in a worse
         // position in the event of a third party settlement.
         require(buffer > G_SETTLEMENT_DISCOUNT(), $$(ErrorCode(INVALID_HAIRCUT_SIZE)));
-        exchangeRateOracles[base][quote] = ExchangeRate.Rate(
-            rateOracle,
-            rateDecimals,
-            mustInvert,
-            buffer
-        );
+        exchangeRateOracles[base][quote] = ExchangeRate.Rate(rateOracle, rateDecimals, mustInvert, buffer);
 
         emit UpdateExchangeRate(base, quote);
     }
@@ -260,7 +254,7 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
      * @param currency currency id
      * @return true if the currency is valid
      */
-    function isValidCurrency(uint16 currency) public override view returns (bool) {
+    function isValidCurrency(uint16 currency) public view override returns (bool) {
         return currency <= maxCurrencyId;
     }
 
@@ -280,7 +274,7 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
      * @param account the account to query
      * @return the balance of each currency net of the account's cash position
      */
-    function getBalances(address account) external override view returns (int256[] memory) {
+    function getBalances(address account) external view override returns (int256[] memory) {
         // We add one here because the zero currency index is unused
         int256[] memory balances = new int256[](maxCurrencyId + 1);
 
@@ -299,7 +293,7 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
      * @param amounts the balance in each currency group as an array, each index refers to the currency group id.
      * @return an array the same length as amounts with each balance denominated in ETH
      */
-    function convertBalancesToETH(int256[] memory amounts) public override view returns (int256[] memory) {
+    function convertBalancesToETH(int256[] memory amounts) public view override returns (int256[] memory) {
         // We expect values for all currencies to be supplied here, we will not do any work on 0 balances.
         require(amounts.length == maxCurrencyId + 1, $$(ErrorCode(INVALID_CURRENCY)));
         int256[] memory results = new int256[](amounts.length);
@@ -357,9 +351,7 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
         require(msg.value <= Common.MAX_UINT_128, $$(ErrorCode(OVER_MAX_ETH_BALANCE)));
         IWETH(WETH).deposit{value: msg.value}();
 
-        cashBalances[0][to] = cashBalances[0][to].add(
-            uint128(msg.value)
-        );
+        cashBalances[0][to] = cashBalances[0][to].add(uint128(msg.value));
         emit Deposit(0, to, msg.value);
     }
 
@@ -397,7 +389,11 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
         _deposit(msg.sender, token, amount);
     }
 
-    function _deposit(address from, address token, uint128 amount) internal {
+    function _deposit(
+        address from,
+        address token,
+        uint128 amount
+    ) internal {
         uint16 currencyId = addressToCurrencyId[token];
         if ((currencyId == 0 && token != WETH)) {
             revert($$(ErrorCode(INVALID_CURRENCY)));
@@ -426,10 +422,10 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
             amount = SafeCast.toUint128(postTransferBalance.sub(preTransferBalance));
         } else if (options.isERC777) {
             IERC777(token).operatorSend(from, address(this), amount, "0x", "0x");
-        }else {
+        } else {
             SafeERC20.safeTransferFrom(IERC20(token), from, address(this), amount);
         }
-        
+
         return amount;
     }
 
@@ -443,8 +439,8 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
      * @param amount total value to withdraw
      */
     function withdraw(address token, uint128 amount) external {
-       bool didWithdraw = _withdraw(msg.sender, msg.sender, token, amount, true);
-       require(didWithdraw, $$(ErrorCode(INSUFFICIENT_BALANCE)));
+        bool didWithdraw = _withdraw(msg.sender, msg.sender, token, amount, true);
+        require(didWithdraw, $$(ErrorCode(INSUFFICIENT_BALANCE)));
     }
 
     function _withdraw(
@@ -585,8 +581,7 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
         require(msg.sender == cg.cashMarket, $$(ErrorCode(UNAUTHORIZED_CALLER)));
 
         if (fee > 0) {
-            cashBalances[cg.currency][G_RESERVE_ACCOUNT] = cashBalances[cg.currency][G_RESERVE_ACCOUNT]
-                .add(fee);
+            cashBalances[cg.currency][G_RESERVE_ACCOUNT] = cashBalances[cg.currency][G_RESERVE_ACCOUNT].add(fee);
         }
 
         cashBalances[cg.currency][msg.sender] = cashBalances[cg.currency][msg.sender].add(value);
@@ -614,8 +609,7 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
         require(msg.sender == cg.cashMarket, $$(ErrorCode(UNAUTHORIZED_CALLER)));
 
         if (fee > 0) {
-            cashBalances[cg.currency][G_RESERVE_ACCOUNT] = cashBalances[cg.currency][G_RESERVE_ACCOUNT]
-                .add(fee);
+            cashBalances[cg.currency][G_RESERVE_ACCOUNT] = cashBalances[cg.currency][G_RESERVE_ACCOUNT].add(fee);
         }
 
         cashBalances[cg.currency][account] = cashBalances[cg.currency][account].add(value.sub(fee));
@@ -705,11 +699,7 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
         for (uint256 i; i < payers.length; i++) {
             uint128 local;
             uint128 collateral;
-            (settledAmounts[i], local, collateral) = _settleCashBalance(
-                payers[i],
-                values[i],
-                rateParam
-            );
+            (settledAmounts[i], local, collateral) = _settleCashBalance(payers[i], values[i], rateParam);
 
             totalCollateral = totalCollateral.add(collateral);
             totalLocal = totalLocal.add(local);
@@ -744,7 +734,11 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
     ) external {
         Liquidation.RateParameters memory rateParam = _validateCurrencies(localCurrency, collateralCurrency);
 
-        (uint128 settledAmount, uint128 totalLocal, uint128 totalCollateral) = _settleCashBalance(payer, value, rateParam);
+        (uint128 settledAmount, uint128 totalLocal, uint128 totalCollateral) = _settleCashBalance(
+            payer,
+            value,
+            rateParam
+        );
 
         _finishLiquidateSettle(localCurrency, totalLocal);
         _finishLiquidateSettle(collateralCurrency, int256(totalCollateral).neg());
@@ -761,11 +755,18 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
         address payer,
         uint128 valueToSettle,
         Liquidation.RateParameters memory rateParam
-    ) internal returns (uint128, uint128, uint128) {
+    )
+        internal
+        returns (
+            uint128,
+            uint128,
+            uint128
+        )
+    {
         require(payer != msg.sender, $$(ErrorCode(CANNOT_SETTLE_SELF)));
         if (valueToSettle == 0) return (0, 0, 0);
         Common.FreeCollateralFactors memory fc = _freeCollateralFactors(
-            payer, 
+            payer,
             rateParam.localCurrency,
             rateParam.collateralCurrency
         );
@@ -861,7 +862,11 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
         uint16 collateralCurrency
     ) external {
         Liquidation.RateParameters memory rateParam = _validateCurrencies(localCurrency, collateralCurrency);
-        (uint128 amountRecollateralized, int256 totalLocal, uint128 totalCollateral) = _liquidate(account, rateParam, maxLiquidateAmount);
+        (uint128 amountRecollateralized, int256 totalLocal, uint128 totalCollateral) = _liquidate(
+            account,
+            rateParam,
+            maxLiquidateAmount
+        );
 
         _finishLiquidateSettle(localCurrency, totalLocal);
         _finishLiquidateSettle(collateralCurrency, int256(totalCollateral).neg());
@@ -873,15 +878,22 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
         address payer,
         Liquidation.RateParameters memory rateParam,
         uint128 maxLiquidateAmount
-    ) internal returns (uint128, int256, uint128) {
+    )
+        internal
+        returns (
+            uint128,
+            int256,
+            uint128
+        )
+    {
         require(payer != msg.sender, $$(ErrorCode(CANNOT_LIQUIDATE_SELF)));
 
         Common.FreeCollateralFactors memory fc = _freeCollateralFactors(
-            payer, 
+            payer,
             rateParam.localCurrency,
             rateParam.collateralCurrency
         );
-        require(fc.aggregate < 0,  $$(ErrorCode(CANNOT_LIQUIDATE_SUFFICIENT_COLLATERAL)));
+        require(fc.aggregate < 0, $$(ErrorCode(CANNOT_LIQUIDATE_SUFFICIENT_COLLATERAL)));
 
         // Getting the cashBalance must happen after the free collateral call because settleMaturedAssets may update cash balances.
         int256 balance = cashBalances[rateParam.collateralCurrency][payer];
@@ -899,7 +911,9 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
         }
 
         if (transfer.netLocalCurrencyPayer > 0) {
-            cashBalances[rateParam.localCurrency][payer] = cashBalances[rateParam.localCurrency][payer].add(transfer.netLocalCurrencyPayer);
+            cashBalances[rateParam.localCurrency][payer] = cashBalances[rateParam.localCurrency][payer].add(
+                transfer.netLocalCurrencyPayer
+            );
         }
 
         return (
@@ -981,7 +995,7 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
     }
 
     /**
-     * @notice Purchase fCash receiver assets in order to recollateralize a portfolio. Similar to `settlefCash`, this can only be done 
+     * @notice Purchase fCash receiver assets in order to recollateralize a portfolio. Similar to `settlefCash`, this can only be done
      * @param payer account that will pay fCash to settle current debts
      * @param localCurrency currency that current debts are denominated in
      * @param collateralCurrency currency that fCash receivers are denominated in. Unlike `settlfCash` it is not possible for localCurrency
@@ -1025,10 +1039,7 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
      * @param account account that is undercollateralized
      * @param localCurrency currency that current debts are denominated in
      */
-    function settleReserve(
-        address account,
-        uint16 localCurrency
-    ) external {
+    function settleReserve(address account, uint16 localCurrency) external {
         Portfolios().settleMaturedAssets(account);
         require(!_hasCollateral(account), $$(ErrorCode(ACCOUNT_HAS_COLLATERAL)));
         require(_hasNoAssets(account), $$(ErrorCode(ACCOUNT_HAS_COLLATERAL)));
@@ -1051,10 +1062,11 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
     /********** Internal Methods *********************/
 
     /** @notice Validates currencies and returns their rate parameters object */
-    function _validateCurrencies(
-        uint16 localCurrency,
-        uint16 collateralCurrency
-    ) internal view returns (Liquidation.RateParameters memory) {
+    function _validateCurrencies(uint16 localCurrency, uint16 collateralCurrency)
+        internal
+        view
+        returns (Liquidation.RateParameters memory)
+    {
         require(isValidCurrency(localCurrency), $$(ErrorCode(INVALID_CURRENCY)));
         require(isValidCurrency(collateralCurrency), $$(ErrorCode(INVALID_CURRENCY)));
         require(localCurrency != collateralCurrency, $$(ErrorCode(INVALID_CURRENCY)));
@@ -1067,20 +1079,18 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
         }
         uint256 rate = ExchangeRate._exchangeRate(baseER, quoteER, collateralCurrency);
 
-        return Liquidation.RateParameters(
-            rate,
-            localCurrency,
-            collateralCurrency,
-            currencyIdToDecimals[localCurrency],
-            currencyIdToDecimals[collateralCurrency],
-            baseER
-        );
+        return
+            Liquidation.RateParameters(
+                rate,
+                localCurrency,
+                collateralCurrency,
+                currencyIdToDecimals[localCurrency],
+                currencyIdToDecimals[collateralCurrency],
+                baseER
+            );
     }
 
-    function _finishLiquidateSettle(
-        uint16 currency,
-        int256 netAmount
-    ) internal {
+    function _finishLiquidateSettle(uint16 currency, int256 netAmount) internal {
         address token = currencyIdToAddress[currency];
         if (netAmount > 0) {
             TokenOptions memory options = tokenOptions[token];
@@ -1115,7 +1125,6 @@ contract Escrow is EscrowStorage, Governed, IERC777Recipient, IEscrowCallable {
     ) internal returns (Common.FreeCollateralFactors memory) {
         return Portfolios().freeCollateralFactors(account, localCurrency, collateralCurrency);
     }
-
 
     function _hasCollateral(address account) internal view returns (bool) {
         for (uint256 i; i <= maxCurrencyId; i++) {

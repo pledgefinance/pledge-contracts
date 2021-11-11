@@ -1,20 +1,28 @@
 import chai from "chai";
-import { solidity } from "ethereum-waffle";
-import { fixture, wallets, fixtureLoader, provider, CURRENCY, fastForwardToMaturity, fastForwardToTime } from "./fixtures";
-import { Wallet } from "ethers";
-import { WeiPerEther } from "ethers/constants";
+import {solidity} from "ethereum-waffle";
+import {
+    fixture,
+    wallets,
+    fixtureLoader,
+    provider,
+    CURRENCY,
+    fastForwardToMaturity,
+    fastForwardToTime,
+} from "./fixtures";
+import {Wallet} from "ethers";
+import {WeiPerEther} from "ethers/constants";
 
 import {Ierc20 as ERC20} from "../typechain/Ierc20";
-import { CashMarket } from "../typechain/CashMarket";
-import { ErrorDecoder, ErrorCodes } from "../scripts/errorCodes";
-import { Escrow } from "../typechain/Escrow";
-import { Portfolios } from "../typechain/Portfolios";
-import { TestUtils, BLOCK_TIME_LIMIT } from "./testUtils";
-import { parseEther, BigNumber } from 'ethers/utils';
-import { Iweth } from '../typechain/Iweth';
+import {CashMarket} from "../typechain/CashMarket";
+import {ErrorDecoder, ErrorCodes} from "../scripts/errorCodes";
+import {Escrow} from "../typechain/Escrow";
+import {Portfolios} from "../typechain/Portfolios";
+import {TestUtils, BLOCK_TIME_LIMIT} from "./testUtils";
+import {parseEther, BigNumber} from "ethers/utils";
+import {Iweth} from "../typechain/Iweth";
 
 chai.use(solidity);
-const { expect } = chai;
+const {expect} = chai;
 
 describe("Portfolio", () => {
     let dai: ERC20;
@@ -111,40 +119,50 @@ describe("Portfolio", () => {
     });
 
     it("does not allow fCash groups with invalid currencies", async () => {
-        await expect(
-            portfolios.createCashGroup(2, 40, 1e9, 3, futureCash.address)
-        ).to.be.revertedWith(ErrorDecoder.encodeError(ErrorCodes.INVALID_CURRENCY));
+        await expect(portfolios.createCashGroup(2, 40, 1e9, 3, futureCash.address)).to.be.revertedWith(
+            ErrorDecoder.encodeError(ErrorCodes.INVALID_CURRENCY)
+        );
     });
 
     it("allows fCash groups to be updated", async () => {
-        await expect(
-            portfolios.updateCashGroup(1, 0, 1000, 1e8, CURRENCY.DAI, futureCash.address)
-        ).to.be.revertedWith(ErrorDecoder.encodeError(ErrorCodes.INVALID_INSTRUMENT_PRECISION));
+        await expect(portfolios.updateCashGroup(1, 0, 1000, 1e8, CURRENCY.DAI, futureCash.address)).to.be.revertedWith(
+            ErrorDecoder.encodeError(ErrorCodes.INVALID_INSTRUMENT_PRECISION)
+        );
 
         await portfolios.updateCashGroup(1, 0, 1000, 1e9, CURRENCY.DAI, futureCash.address);
-        expect(await portfolios.getCashGroup(1)).to.eql([
-            0,
-            1000,
-            1e9,
-            futureCash.address,
-            CURRENCY.DAI
-        ]);
+        expect(await portfolios.getCashGroup(1)).to.eql([0, 1000, 1e9, futureCash.address, CURRENCY.DAI]);
     });
 
     it("prevents assets being added past max assets", async () => {
-      await portfolios.setMaxAssets(2);
-      await escrow.deposit(dai.address, WeiPerEther.mul(200));
-      await futureCash.addLiquidity(maturities[0], WeiPerEther.mul(10), WeiPerEther.mul(10), 0, 100_000_000, BLOCK_TIME_LIMIT);
-      await expect(
-        futureCash.addLiquidity(maturities[1], WeiPerEther.mul(10), WeiPerEther.mul(10), 0, 100_000_000, BLOCK_TIME_LIMIT)
-      ).to.be.revertedWith(ErrorDecoder.encodeError(ErrorCodes.PORTFOLIO_TOO_LARGE));
+        await portfolios.setMaxAssets(2);
+        await escrow.deposit(dai.address, WeiPerEther.mul(200));
+        await futureCash.addLiquidity(
+            maturities[0],
+            WeiPerEther.mul(10),
+            WeiPerEther.mul(10),
+            0,
+            100_000_000,
+            BLOCK_TIME_LIMIT
+        );
+        await expect(
+            futureCash.addLiquidity(
+                maturities[1],
+                WeiPerEther.mul(10),
+                WeiPerEther.mul(10),
+                0,
+                100_000_000,
+                BLOCK_TIME_LIMIT
+            )
+        ).to.be.revertedWith(ErrorDecoder.encodeError(ErrorCodes.PORTFOLIO_TOO_LARGE));
     });
 
     it("allows liquidation to add past max assets", async () => {
         await t.setupLiquidity(owner, 0.5, parseEther("100000"), [0, 1]);
 
         await escrow.connect(wallet).deposit(dai.address, parseEther("200"));
-        await futureCash.connect(wallet).addLiquidity(maturities[1], parseEther("100"), parseEther("100"), 0, 100_000_000, BLOCK_TIME_LIMIT);
+        await futureCash
+            .connect(wallet)
+            .addLiquidity(maturities[1], parseEther("100"), parseEther("100"), 0, 100_000_000, BLOCK_TIME_LIMIT);
         await futureCash.connect(wallet).takefCash(maturities[1], parseEther("100"), BLOCK_TIME_LIMIT, 0);
         await t.borrowAndWithdraw(wallet, parseEther("200"));
 
@@ -162,13 +180,13 @@ describe("Portfolio", () => {
             const ethBalance = await escrow.cashBalances(CURRENCY.ETH, wallet.address);
             expect(fc[0].sub(ethBalance)).to.equal(eth);
             expect(fc[1][CURRENCY.DAI]).to.equal(dai);
-        }
+        };
 
-        beforeEach(async () => { 
+        beforeEach(async () => {
             await t.setupLiquidity(owner, 0.5, parseEther("10000"), [0, 1, 2]);
             // Setting the haircut so maxfCashValue is always true
             await portfolios.setHaircuts(WeiPerEther, parseEther("0"), parseEther("0.95"));
-        })
+        });
 
         it("cash = 0, cashClaim = 0, netfCashValue = -100 | available = -100", async () => {
             await t.borrowAndWithdraw(wallet, parseEther("100"));
@@ -193,7 +211,7 @@ describe("Portfolio", () => {
 
         it("cash = 125, cashClaim = 0, netfCashValue = -100 | available = 25", async () => {
             await escrow.connect(wallet).deposit(dai.address, parseEther("125"));
-            const [ethAmount, ] = await t.borrowAndWithdraw(wallet, parseEther("100"), 1.5, 1);
+            const [ethAmount] = await t.borrowAndWithdraw(wallet, parseEther("100"), 1.5, 1);
             await escrow.connect(wallet).withdraw(weth.address, ethAmount);
             await checkFC(parseEther("0.25"), parseEther("25"));
         });
@@ -201,7 +219,7 @@ describe("Portfolio", () => {
         it("cash = 125, cashClaim = 50, netfCashValue = -100 | available = 75", async () => {
             // This sets up a 100 dai cash balance
             await escrow.connect(wallet).deposit(dai.address, parseEther("125"));
-            const [ethAmount, ] = await t.borrowAndWithdraw(wallet, parseEther("100"), 1.5, 1);
+            const [ethAmount] = await t.borrowAndWithdraw(wallet, parseEther("100"), 1.5, 1);
             await escrow.connect(wallet).withdraw(weth.address, ethAmount);
 
             await t.setupLiquidity(wallet, 0.5, parseEther("50"), [2]);
@@ -210,7 +228,7 @@ describe("Portfolio", () => {
 
         it("cash = 0, cashClaim = 50, netfCashValue = 90 | available = 140", async () => {
             // Tests that borrows and fCash net out
-            const [ethAmount, ] = await t.borrowAndWithdraw(wallet, parseEther("100"), 1.5, 1);
+            const [ethAmount] = await t.borrowAndWithdraw(wallet, parseEther("100"), 1.5, 1);
 
             await t.lendAndWithdraw(wallet, parseEther("200"), 0);
             await t.setupLiquidity(wallet, 0.5, parseEther("50"), [2]);
@@ -226,7 +244,9 @@ describe("Portfolio", () => {
 
             const fc = await portfolios.freeCollateralView(wallet.address);
             // fCash claim has some residual due to trading
-            expect(fc[1][1].sub(parseEther("171.25"))).to.be.above(0).and.below(WeiPerEther.div(10));
+            expect(fc[1][1].sub(parseEther("171.25")))
+                .to.be.above(0)
+                .and.below(WeiPerEther.div(10));
         });
     });
 });

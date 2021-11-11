@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.6.0;
 
-
 /**
     @title ERC-1155 Multi Token Standard
     @dev See https://eips.ethereum.org/EIPS/eip-1155
@@ -85,7 +84,13 @@ interface IERC1155 {
         @param _data    Additional data with no specified format, MUST be sent unaltered in call to
             `onERC1155Received` on `_to`
     */
-    function safeTransferFrom(address _from, address _to, uint256 _id, uint256 _value, bytes calldata _data) external;
+    function safeTransferFrom(
+        address _from,
+        address _to,
+        uint256 _id,
+        uint256 _value,
+        bytes calldata _data
+    ) external;
 
     /**
         @notice Transfers `_values` amount(s) of `_ids` from the `_from` address to the `_to` address specified (with

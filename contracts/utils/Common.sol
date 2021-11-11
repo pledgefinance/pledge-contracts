@@ -237,7 +237,14 @@ library Common {
      * @param _id a uint256 asset id
      * @return (cashGroupId, instrumentId, maturity)
      */
-    function decodeAssetId(uint256 _id) internal pure returns (uint8, uint16, uint32)
+    function decodeAssetId(uint256 _id)
+        internal
+        pure
+        returns (
+            uint8,
+            uint16,
+            uint32
+        )
     {
         bytes32 id = bytes32(_id);
         return (

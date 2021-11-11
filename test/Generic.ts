@@ -1,23 +1,23 @@
 import chai from "chai";
-import { solidity, deployContract } from "ethereum-waffle";
-import { fixture, wallets, fixtureLoader, provider, fastForwardToMaturity } from "./fixtures";
-import { Wallet, ethers } from "ethers";
-import { WeiPerEther, AddressZero } from "ethers/constants";
+import {solidity, deployContract} from "ethereum-waffle";
+import {fixture, wallets, fixtureLoader, provider, fastForwardToMaturity} from "./fixtures";
+import {Wallet, ethers} from "ethers";
+import {WeiPerEther, AddressZero} from "ethers/constants";
 
 import {Ierc20 as ERC20} from "../typechain/Ierc20";
-import { CashMarket } from "../typechain/CashMarket";
-import { ProxyAdmin } from "../typechain/ProxyAdmin";
+import {CashMarket} from "../typechain/CashMarket";
+import {ProxyAdmin} from "../typechain/ProxyAdmin";
 import FutureCashArtifact from "../build/CashMarket.json";
-import { Escrow } from "../typechain/Escrow";
+import {Escrow} from "../typechain/Escrow";
 import AdminUpgradeabilityProxyArtifact from "../build/AdminUpgradeabilityProxy.json";
-import { AdminUpgradeabilityProxy } from "../typechain/AdminUpgradeabilityProxy";
-import { ErrorDecoder, ErrorCodes } from "../scripts/errorCodes";
-import { Portfolios } from "../typechain/Portfolios";
-import { BLOCK_TIME_LIMIT } from "./testUtils";
-import { parseEther } from 'ethers/utils';
+import {AdminUpgradeabilityProxy} from "../typechain/AdminUpgradeabilityProxy";
+import {ErrorDecoder, ErrorCodes} from "../scripts/errorCodes";
+import {Portfolios} from "../typechain/Portfolios";
+import {BLOCK_TIME_LIMIT} from "./testUtils";
+import {parseEther} from "ethers/utils";
 
 chai.use(solidity);
-const { expect } = chai;
+const {expect} = chai;
 
 describe("Generic Tests", () => {
     let dai: ERC20;
@@ -66,7 +66,8 @@ describe("Generic Tests", () => {
             maturities[0],
             WeiPerEther.mul(10_000),
             WeiPerEther.mul(10_000),
-            0, 100_000_000, 
+            0,
+            100_000_000,
             BLOCK_TIME_LIMIT
         );
         const futureCashProxy = new ethers.Contract(
@@ -76,7 +77,7 @@ describe("Generic Tests", () => {
         ) as AdminUpgradeabilityProxy;
 
         const futureCashUpgrade = (await deployContract(owner, FutureCashArtifact, [], {
-            gasLimit: 6000000
+            gasLimit: 6000000,
         })) as CashMarket;
         await expect(proxyAdmin.upgrade(futureCash.address, futureCashUpgrade.address))
             .to.emit(futureCashProxy, "Upgraded")
@@ -89,10 +90,12 @@ describe("Generic Tests", () => {
     });
 
     it("does not allow wallets to call protected functions on escrow", async () => {
-        await expect(escrow.connect(wallet).listCurrency(AddressZero,  {isERC777: false, hasTransferFee: false })).to.be.reverted;
+        await expect(escrow.connect(wallet).listCurrency(AddressZero, {isERC777: false, hasTransferFee: false})).to.be
+            .reverted;
         await expect(escrow.connect(wallet).setReserveAccount(AddressZero)).to.be.reverted;
         await expect(escrow.connect(wallet).setDiscounts(WeiPerEther, WeiPerEther, WeiPerEther)).to.be.reverted;
-        await expect(escrow.connect(wallet).addExchangeRate(0, 0, AddressZero, WeiPerEther, WeiPerEther, false)).to.be.reverted;
+        await expect(escrow.connect(wallet).addExchangeRate(0, 0, AddressZero, WeiPerEther, WeiPerEther, false)).to.be
+            .reverted;
 
         await expect(escrow.connect(wallet).setLiquidityHaircut(WeiPerEther)).to.be.revertedWith(
             ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER)
@@ -105,18 +108,20 @@ describe("Generic Tests", () => {
         );
 
         await expect(
-            escrow.connect(wallet).depositsOnBehalf(wallet.address, [{ currencyId: 1, amount: parseEther("1") }])
+            escrow.connect(wallet).depositsOnBehalf(wallet.address, [{currencyId: 1, amount: parseEther("1")}])
         ).to.be.revertedWith(ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER));
         await expect(
-            escrow.connect(wallet).withdrawsOnBehalf(wallet.address, [{ to: wallet.address, currencyId: 1, amount: parseEther("1")}])
+            escrow
+                .connect(wallet)
+                .withdrawsOnBehalf(wallet.address, [{to: wallet.address, currencyId: 1, amount: parseEther("1")}])
         ).to.be.revertedWith(ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER));
 
-        await expect(
-            escrow.connect(wallet).withdrawFromMarket(wallet.address, 1, WeiPerEther, 0)
-        ).to.be.revertedWith(ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER));
-        await expect(
-            escrow.connect(wallet).depositIntoMarket(wallet.address, 1, WeiPerEther, 0)
-        ).to.be.revertedWith(ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER));
+        await expect(escrow.connect(wallet).withdrawFromMarket(wallet.address, 1, WeiPerEther, 0)).to.be.revertedWith(
+            ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER)
+        );
+        await expect(escrow.connect(wallet).depositIntoMarket(wallet.address, 1, WeiPerEther, 0)).to.be.revertedWith(
+            ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER)
+        );
     });
 
     it("does not allow wallets to call protected functions on fCash", async () => {
@@ -141,7 +146,9 @@ describe("Generic Tests", () => {
             futureCash.connect(wallet).takefCashOnBehalf(wallet.address, maturities[0], WeiPerEther, 0)
         ).to.be.revertedWith(ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER));
         await expect(
-            futureCash.connect(wallet).addLiquidityOnBehalf(wallet.address, maturities[0], WeiPerEther, WeiPerEther, 0, 100_000_00)
+            futureCash
+                .connect(wallet)
+                .addLiquidityOnBehalf(wallet.address, maturities[0], WeiPerEther, WeiPerEther, 0, 100_000_00)
         ).to.be.revertedWith(ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER));
         await expect(
             futureCash.connect(wallet).removeLiquidityOnBehalf(wallet.address, maturities[0], WeiPerEther)
@@ -166,69 +173,81 @@ describe("Generic Tests", () => {
         ).to.be.revertedWith(ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER));
 
         await expect(
-            portfolios.connect(wallet).upsertAccountAsset(wallet.address, {
-                cashGroupId: 1,
-                instrumentId: 0,
-                maturity: 1000,
-                rate: 1e9,
-                notional: WeiPerEther,
-                assetType: "0x98"
-            }, true)
-        ).to.be.revertedWith(ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER));
-
-        await expect(
-            portfolios.connect(wallet).upsertAccountAssetBatch(wallet.address, [
+            portfolios.connect(wallet).upsertAccountAsset(
+                wallet.address,
                 {
                     cashGroupId: 1,
                     instrumentId: 0,
                     maturity: 1000,
                     rate: 1e9,
                     notional: WeiPerEther,
-                    assetType: "0x98"
-                }
-            ], true)
-        ).to.be.revertedWith(ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER));
-
-        await expect(
-            portfolios.connect(wallet).upsertAccountAssetBatch(wallet.address, [
-                {
-                    cashGroupId: 1,
-                    instrumentId: 0,
-                    maturity: 1000,
-                    rate: 1e9,
-                    notional: WeiPerEther,
-                    assetType: "0x98"
+                    assetType: "0x98",
                 },
-                {
-                    cashGroupId: 2,
-                    instrumentId: 0,
-                    maturity: 1000,
-                    rate: 1e9,
-                    notional: WeiPerEther,
-                    assetType: "0x98"
-                }
-            ], true)
+                true
+            )
+        ).to.be.revertedWith(ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER));
+
+        await expect(
+            portfolios.connect(wallet).upsertAccountAssetBatch(
+                wallet.address,
+                [
+                    {
+                        cashGroupId: 1,
+                        instrumentId: 0,
+                        maturity: 1000,
+                        rate: 1e9,
+                        notional: WeiPerEther,
+                        assetType: "0x98",
+                    },
+                ],
+                true
+            )
+        ).to.be.revertedWith(ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER));
+
+        await expect(
+            portfolios.connect(wallet).upsertAccountAssetBatch(
+                wallet.address,
+                [
+                    {
+                        cashGroupId: 1,
+                        instrumentId: 0,
+                        maturity: 1000,
+                        rate: 1e9,
+                        notional: WeiPerEther,
+                        assetType: "0x98",
+                    },
+                    {
+                        cashGroupId: 2,
+                        instrumentId: 0,
+                        maturity: 1000,
+                        rate: 1e9,
+                        notional: WeiPerEther,
+                        assetType: "0x98",
+                    },
+                ],
+                true
+            )
         ).to.be.revertedWith(ErrorDecoder.decodeError(ErrorCodes.INVALID_ASSET_BATCH));
 
         await expect(
-            portfolios.connect(wallet).mintfCashPair(
-                wallet.address,
-                owner.address,
-                1,
-                1000,
-                WeiPerEther
-            )
+            portfolios.connect(wallet).mintfCashPair(wallet.address, owner.address, 1, 1000, WeiPerEther)
         ).to.be.revertedWith(ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER));
 
         // This takes a little work to ensure that we get the right revert
         const maturities = await futureCash.getActiveMaturities();
         await escrow.deposit(dai.address, parseEther("1000"));
-        await futureCash.addLiquidity(maturities[0], parseEther("1000"), parseEther("1000"), 0, 100_000_000, BLOCK_TIME_LIMIT);
+        await futureCash.addLiquidity(
+            maturities[0],
+            parseEther("1000"),
+            parseEther("1000"),
+            0,
+            100_000_000,
+            BLOCK_TIME_LIMIT
+        );
         await escrow.connect(wallet).deposit(dai.address, parseEther("1"));
         await futureCash.connect(wallet).takefCash(maturities[0], parseEther("1"), BLOCK_TIME_LIMIT, 0);
         await expect(
             portfolios.connect(wallet).raiseCurrentCashViaCashReceiver(wallet.address, owner.address, 1, WeiPerEther)
         ).to.be.revertedWith(ErrorDecoder.decodeError(ErrorCodes.UNAUTHORIZED_CALLER));
-
     });
 });

@@ -1,8 +1,8 @@
 import chai from "chai";
-import { solidity, deployContract } from "ethereum-waffle";
-import { fixture, wallets, fixtureLoader, provider, fastForwardToMaturity, CURRENCY } from "./fixtures";
-import { Wallet } from "ethers";
-import { WeiPerEther, AddressZero } from "ethers/constants";
+import {solidity, deployContract} from "ethereum-waffle";
+import {fixture, wallets, fixtureLoader, provider, fastForwardToMaturity, CURRENCY} from "./fixtures";
+import {Wallet} from "ethers";
+import {WeiPerEther, AddressZero} from "ethers/constants";
 
 import ERC777Artifact from "../mocks/ERC777.json";
 import MockUSDC from "../mocks/MockUSDC.json";
@@ -20,7 +20,7 @@ import {Ierc777 as IERC777} from "../typechain/Ierc777";
 import {MockAggregator} from "../mocks/MockAggregator";
 
 chai.use(solidity);
-const { expect } = chai;
+const {expect} = chai;
 
 describe("Deposits and Withdraws", () => {
     let dai: ERC20;
@@ -129,23 +129,23 @@ describe("Deposits and Withdraws", () => {
     });
 
     it("does not allow currencies to be listed twice", async () => {
-        await expect(
-            escrow.listCurrency(dai.address, { isERC777: true, hasTransferFee: false })
-        ).to.be.revertedWith(ErrorDecoder.decodeError(ErrorCodes.INVALID_CURRENCY));
+        await expect(escrow.listCurrency(dai.address, {isERC777: true, hasTransferFee: false})).to.be.revertedWith(
+            ErrorDecoder.decodeError(ErrorCodes.INVALID_CURRENCY)
+        );
     });
 
     it("erc777 token deposits are not double counted", async () => {
-        const erc777 = await deployContract(owner, ERC777Artifact, [registry.address]) as IERC777;
-        await escrow.listCurrency(erc777.address, { isERC777: true, hasTransferFee: false });
+        const erc777 = (await deployContract(owner, ERC777Artifact, [registry.address])) as IERC777;
+        await escrow.listCurrency(erc777.address, {isERC777: true, hasTransferFee: false});
         await erc777.authorizeOperator(escrow.address);
 
-        await escrow.deposit(erc777.address, parseEther("0.000001"))
+        await escrow.deposit(erc777.address, parseEther("0.000001"));
         expect(await escrow.cashBalances(2, owner.address)).to.equal(parseEther("0.000001"));
-    })
+    });
 
     it("supports erc777 token transfers", async () => {
         const erc777 = await deployContract(owner, ERC777Artifact, [registry.address]);
-        await escrow.listCurrency(erc777.address, { isERC777: true, hasTransferFee: false });
+        await escrow.listCurrency(erc777.address, {isERC777: true, hasTransferFee: false});
 
         await expect(erc777.send(escrow.address, 100, []))
             .to.emit(erc777, "Sent")
@@ -160,7 +160,7 @@ describe("Deposits and Withdraws", () => {
     // withdraws //
     it("allows users to withdraw eth", async () => {
         const balance = await owner.getBalance();
-        await escrow.depositEth({ value: WeiPerEther });
+        await escrow.depositEth({value: WeiPerEther});
         await escrow.withdrawEth(WeiPerEther.div(2));
         expect(await escrow.cashBalances(CURRENCY.ETH, owner.address)).to.equal(WeiPerEther.div(2));
         expect(balance.sub(await owner.getBalance())).to.be.at.least(WeiPerEther.div(2));
@@ -194,11 +194,11 @@ describe("Deposits and Withdraws", () => {
 
         const daiBalanceBefore = await dai.balanceOf(owner.address);
         // Escrow cuts off the withdraw at 0, so this will only withdraw 1 DAI
-        await escrow.withdraw(dai.address, WeiPerEther.mul(2))
+        await escrow.withdraw(dai.address, WeiPerEther.mul(2));
         const daiBalanceAfter = await dai.balanceOf(owner.address);
 
-        expect(await escrow.cashBalances(CURRENCY.DAI, owner.address)).to.equal(0)
-        expect(daiBalanceAfter.sub(daiBalanceBefore)).to.equal(WeiPerEther)
+        expect(await escrow.cashBalances(CURRENCY.DAI, owner.address)).to.equal(0);
+        expect(daiBalanceAfter.sub(daiBalanceBefore)).to.equal(WeiPerEther);
     });
 
     it("prevents users from withdrawing eth if they do not have enough collateral", async () => {
@@ -213,13 +213,13 @@ describe("Deposits and Withdraws", () => {
     it("reverts if a withdraw occurs on a negative cash balance", async () => {
         await t.setupLiquidity();
         await t.borrowAndWithdraw(wallet, WeiPerEther.mul(200));
-        await fastForwardToMaturity(provider, maturities[0])
+        await fastForwardToMaturity(provider, maturities[0]);
 
-        await portfolios.settleMaturedAssets(wallet.address)
+        await portfolios.settleMaturedAssets(wallet.address);
         await expect(escrow.connect(wallet).withdraw(dai.address, WeiPerEther.mul(2))).to.be.revertedWith(
             ErrorDecoder.encodeError(ErrorCodes.INSUFFICIENT_BALANCE)
         );
-    })
+    });
 
     it("allows users to withdraw excess eth from their collateral", async () => {
         await t.setupLiquidity();
@@ -258,11 +258,11 @@ describe("Deposits and Withdraws", () => {
     });
 
     it("converts balances that are not denominated with 18 decimals to ETH", async () => {
-        const mockUSDC = await deployContract(owner, MockUSDC, []) as ERC20;
-        const mockChainlink = await deployContract(owner, MockAggregatorArtifact, []) as MockAggregator;
+        const mockUSDC = (await deployContract(owner, MockUSDC, [])) as ERC20;
+        const mockChainlink = (await deployContract(owner, MockAggregatorArtifact, [])) as MockAggregator;
         // Here we assume an exchange rate w/ 18 decimal places
         await mockChainlink.setAnswer(parseEther("0.01"));
-        await escrow.listCurrency(mockUSDC.address, { isERC777: false, hasTransferFee: false });
+        await escrow.listCurrency(mockUSDC.address, {isERC777: false, hasTransferFee: false});
         await escrow.addExchangeRate(2, 0, mockChainlink.address, parseEther("1.2"), WeiPerEther, false);
 
         let converted = await escrow.convertBalancesToETH([0, 0, new BigNumber(100 * 1e6)]);
@@ -270,13 +270,13 @@ describe("Deposits and Withdraws", () => {
 
         converted = await escrow.convertBalancesToETH([0, 0, new BigNumber(-100 * 1e6)]);
         expect(converted[2]).to.equal(parseEther("1.2").mul(-1));
-    })
+    });
 
     it("converts balances that are not denominated with 18 decimals to ETH where the exchange rate must be inverted", async () => {
-        const mockUSDC = await deployContract(owner, MockUSDC, []) as ERC20;
-        const mockChainlink = await deployContract(owner, MockAggregatorArtifact, []) as MockAggregator;
+        const mockUSDC = (await deployContract(owner, MockUSDC, [])) as ERC20;
+        const mockChainlink = (await deployContract(owner, MockAggregatorArtifact, [])) as MockAggregator;
         await mockChainlink.setAnswer(100e6);
-        await escrow.listCurrency(mockUSDC.address, { isERC777: false, hasTransferFee: false });
+        await escrow.listCurrency(mockUSDC.address, {isERC777: false, hasTransferFee: false});
         // Here the exchange rate has 6 decimal place precision
         await escrow.addExchangeRate(2, 0, mockChainlink.address, parseEther("1.2"), new BigNumber(1e6), true);
 
@@ -285,8 +285,7 @@ describe("Deposits and Withdraws", () => {
 
         converted = await escrow.convertBalancesToETH([0, 0, new BigNumber(-100 * 1e6)]);
         expect(converted[2]).to.equal(parseEther("1.2").mul(-1));
-    })
-
+    });
 
     // settle cash //
     it("does not allow settling with an invalid currency", async () => {
@@ -380,5 +379,4 @@ describe("Deposits and Withdraws", () => {
             escrow.connect(wallets[4]).liquidateBatch([wallet.address, wallet2.address], CURRENCY.DAI, CURRENCY.ETH)
         ).to.be.reverted;
     });
-
 });

@@ -10,7 +10,6 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/introspection/IERC1820Registry.sol";
 
-
 /**
  * @dev Implementation of the {IERC777} interface.
  *
@@ -43,10 +42,12 @@ contract ERC777 is Context, IERC777, IERC20, Ownable {
     // See https://github.com/ethereum/solidity/issues/4024.
 
     // keccak256("ERC777TokensSender")
-    bytes32 private constant TOKENS_SENDER_INTERFACE_HASH = 0x29ddb589b1fb5fc7cf394961c1adf5f8c6454761adf795e67fe149f658abe895;
+    bytes32 private constant TOKENS_SENDER_INTERFACE_HASH =
+        0x29ddb589b1fb5fc7cf394961c1adf5f8c6454761adf795e67fe149f658abe895;
 
     // keccak256("ERC777TokensRecipient")
-    bytes32 private constant TOKENS_RECIPIENT_INTERFACE_HASH = 0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b;
+    bytes32 private constant TOKENS_RECIPIENT_INTERFACE_HASH =
+        0xb281fc8c12954d22544db45de3159a39272895b169a852b314f9cc762e44c53b;
 
     // This isn't ever read from - it's only used to respond to the defaultOperators query.
     address[] private _defaultOperatorsArray;
@@ -135,7 +136,11 @@ contract ERC777 is Context, IERC777, IERC20, Ownable {
      *
      * Also emits a {IERC20-Transfer} event for ERC20 compatibility.
      */
-    function send(address recipient, uint256 amount, bytes memory data) public {
+    function send(
+        address recipient,
+        uint256 amount,
+        bytes memory data
+    ) public {
         _send(_msgSender(), _msgSender(), recipient, amount, data, "", true);
     }
 
@@ -238,7 +243,12 @@ contract ERC777 is Context, IERC777, IERC20, Ownable {
      *
      * Emits {Burned} and {IERC20-Transfer} events.
      */
-    function operatorBurn(address account, uint256 amount, bytes memory data, bytes memory operatorData) public {
+    function operatorBurn(
+        address account,
+        uint256 amount,
+        bytes memory data,
+        bytes memory operatorData
+    ) public {
         require(isOperatorFor(_msgSender(), account), "ERC777: caller is not an operator for holder");
         _burn(_msgSender(), account, amount, data, operatorData);
     }
@@ -266,15 +276,19 @@ contract ERC777 is Context, IERC777, IERC20, Ownable {
     }
 
     /**
-    * @dev See {IERC20-transferFrom}.
-    *
-    * Note that operator and allowance concepts are orthogonal: operators cannot
-    * call `transferFrom` (unless they have allowance), and accounts with
-    * allowance cannot call `operatorSend` (unless they are operators).
-    *
-    * Emits {Sent}, {IERC20-Transfer} and {IERC20-Approval} events.
-    */
-    function transferFrom(address holder, address recipient, uint256 amount) public returns (bool) {
+     * @dev See {IERC20-transferFrom}.
+     *
+     * Note that operator and allowance concepts are orthogonal: operators cannot
+     * call `transferFrom` (unless they have allowance), and accounts with
+     * allowance cannot call `operatorSend` (unless they are operators).
+     *
+     * Emits {Sent}, {IERC20-Transfer} and {IERC20-Approval} events.
+     */
+    function transferFrom(
+        address holder,
+        address recipient,
+        uint256 amount
+    ) public returns (bool) {
         require(recipient != address(0), "ERC777: transfer to the zero address");
         require(holder != address(0), "ERC777: transfer from the zero address");
 
@@ -311,9 +325,13 @@ contract ERC777 is Context, IERC777, IERC20, Ownable {
      * - if `account` is a contract, it must implement the {IERC777Recipient}
      * interface.
      */
-    function _mint(address operator, address account, uint256 amount, bytes memory userData, bytes memory operatorData)
-        internal
-    {
+    function _mint(
+        address operator,
+        address account,
+        uint256 amount,
+        bytes memory userData,
+        bytes memory operatorData
+    ) internal {
         require(account != address(0), "ERC777: mint to the zero address");
 
         // Update state variables
@@ -363,9 +381,13 @@ contract ERC777 is Context, IERC777, IERC20, Ownable {
      * @param data bytes extra information provided by the token holder
      * @param operatorData bytes extra information provided by the operator (if any)
      */
-    function _burn(address operator, address from, uint256 amount, bytes memory data, bytes memory operatorData)
-        internal
-    {
+    function _burn(
+        address operator,
+        address from,
+        uint256 amount,
+        bytes memory data,
+        bytes memory operatorData
+    ) internal {
         require(from != address(0), "ERC777: burn from the zero address");
 
         _callTokensToSend(operator, from, address(0), amount, data, operatorData);
@@ -393,7 +415,11 @@ contract ERC777 is Context, IERC777, IERC20, Ownable {
         emit Transfer(from, to, amount);
     }
 
-    function _approve(address holder, address spender, uint256 value) private {
+    function _approve(
+        address holder,
+        address spender,
+        uint256 value
+    ) private {
         // TODO: restore this require statement if this function becomes internal, or is called at a new callsite. It is
         // currently unnecessary.
         //require(holder != address(0), "ERC777: approve from the zero address");

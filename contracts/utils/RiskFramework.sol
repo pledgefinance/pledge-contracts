@@ -36,10 +36,11 @@ library RiskFramework {
      * @param portfolio a portfolio of assets
      * @return a set of requirements in every cash group represented by the portfolio
      */
-    function getRequirement(
-        Common.Asset[] memory portfolio,
-        address Portfolios
-    ) public view returns (Common.Requirement[] memory) {
+    function getRequirement(Common.Asset[] memory portfolio, address Portfolios)
+        public
+        view
+        returns (Common.Requirement[] memory)
+    {
         Common._sortPortfolio(portfolio);
 
         // Each position in this array will hold the value of the portfolio in each maturity.
@@ -103,7 +104,6 @@ library RiskFramework {
         uint128 liquidityHaircut,
         uint32 blockTime
     ) internal view returns (int256[] memory) {
-
         // This will hold the current cash claims balance
         int256[] memory cashClaims = new int256[](ladders.length);
 
@@ -180,17 +180,14 @@ library RiskFramework {
         // fCash - fCash * haircut * timeToMaturity / secondsInYear
         int256 postHaircutValue = fCash.sub(
             fCash
-                .mul(fCashHaircut)
-                .mul(maturity - blockTime)
-                .div(Common.SECONDS_IN_YEAR)
-                // fCashHaircut is in 1e18
-                .div(Common.DECIMALS)
+            .mul(fCashHaircut)
+            .mul(maturity - blockTime)
+            .div(Common.SECONDS_IN_YEAR).div(Common.DECIMALS)
+            // fCashHaircut is in 1e18
         );
 
-        int256 maxPostHaircutValue = fCash
-            // This will be set to something like 0.95e18
-            .mul(fCashMaxHaircut)
-            .div(Common.DECIMALS);
+        int256 maxPostHaircutValue = fCash.mul(fCashMaxHaircut).div(Common.DECIMALS);
+        // This will be set to something like 0.95e18
 
         if (postHaircutValue < maxPostHaircutValue) {
             return postHaircutValue;
@@ -221,28 +218,23 @@ library RiskFramework {
                 .div(Common.DECIMALS)
                 .div(market.totalLiquidity);
 
-            fCashClaim = uint256(market.totalfCash)
-                .mul(asset.notional)
-                .mul(liquidityHaircut)
-                .div(Common.DECIMALS)
-                .div(market.totalLiquidity);
+            fCashClaim = uint256(market.totalfCash).mul(asset.notional).mul(liquidityHaircut).div(Common.DECIMALS).div(
+                market.totalLiquidity
+            );
         } else {
-            cashClaim = uint256(market.totalCurrentCash)
-                .mul(asset.notional)
-                .div(market.totalLiquidity);
+            cashClaim = uint256(market.totalCurrentCash).mul(asset.notional).div(market.totalLiquidity);
 
-            fCashClaim = uint256(market.totalfCash)
-                .mul(asset.notional)
-                .div(market.totalLiquidity);
+            fCashClaim = uint256(market.totalfCash).mul(asset.notional).div(market.totalLiquidity);
         }
 
         return (SafeCast.toUint128(cashClaim), SafeCast.toUint128(fCashClaim));
     }
 
-    function _fetchCashGroups(
-        Common.Asset[] memory portfolio,
-        IPortfoliosCallable Portfolios
-    ) internal view returns (Common.CashGroup[] memory, CashLadder[] memory) {
+    function _fetchCashGroups(Common.Asset[] memory portfolio, IPortfoliosCallable Portfolios)
+        internal
+        view
+        returns (Common.CashGroup[] memory, CashLadder[] memory)
+    {
         uint8[] memory groupIds = new uint8[](portfolio.length);
         uint256 numGroups;
 

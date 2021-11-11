@@ -10,7 +10,6 @@ import "./Liquidation.sol";
 import "../storage/EscrowStorage.sol";
 
 contract MockLiquidation is EscrowStorage {
-
     function setParameters(
         uint128 liquidityHaircut,
         uint128 liquidationDiscount,
@@ -39,7 +38,16 @@ contract MockLiquidation is EscrowStorage {
         Liquidation.RateParameters memory rateParam,
         address Portfolios
     ) public {
-        Liquidation._liquidateCollateralCurrency(payer, localCurrencyRequired, liquidityHaircut, transfer, fc, rateParam, Portfolios, 0);
+        Liquidation._liquidateCollateralCurrency(
+            payer,
+            localCurrencyRequired,
+            liquidityHaircut,
+            transfer,
+            fc,
+            rateParam,
+            Portfolios,
+            0
+        );
 
         emit TradeCollateralCurrency(
             transfer.netLocalCurrencyPayer,
@@ -58,8 +66,24 @@ contract MockLiquidation is EscrowStorage {
         Common.FreeCollateralFactors memory fc,
         Liquidation.RateParameters memory rateParam,
         address Portfolios
-    ) public returns (uint128, uint128, int256) {
-        Liquidation._tradeCollateralCurrency(payer, localCurrencyRequired, liquidityHaircut, discountFactor, transfer, fc, rateParam, Portfolios);
+    )
+        public
+        returns (
+            uint128,
+            uint128,
+            int256
+        )
+    {
+        Liquidation._tradeCollateralCurrency(
+            payer,
+            localCurrencyRequired,
+            liquidityHaircut,
+            discountFactor,
+            transfer,
+            fc,
+            rateParam,
+            Portfolios
+        );
 
         emit TradeCollateralCurrency(
             transfer.netLocalCurrencyPayer,
@@ -70,6 +94,7 @@ contract MockLiquidation is EscrowStorage {
     }
 
     event LiquidityTokenTrade(uint128 cashClaimWithdrawn, uint128 localCurrencyRaised);
+
     function localLiquidityTokenTrade(
         address payer,
         uint16 localCurrency,
@@ -77,14 +102,13 @@ contract MockLiquidation is EscrowStorage {
         uint128 liquidityHaircut,
         IPortfoliosCallable Portfolios
     ) public {
-        (uint128 cashClaimWithdrawn, uint128 localCurrencyRaised) = 
-            Liquidation._localLiquidityTokenTrade(
-                payer,
-                localCurrency,
-                localCurrencyRequired,
-                liquidityHaircut,
-                IPortfoliosCallable(Portfolios)
-            );
+        (uint128 cashClaimWithdrawn, uint128 localCurrencyRaised) = Liquidation._localLiquidityTokenTrade(
+            payer,
+            localCurrency,
+            localCurrencyRequired,
+            liquidityHaircut,
+            IPortfoliosCallable(Portfolios)
+        );
 
         emit LiquidityTokenTrade(cashClaimWithdrawn, localCurrencyRaised);
     }
@@ -95,8 +119,24 @@ contract MockLiquidation is EscrowStorage {
         uint128 localCurrencyRequired,
         uint128 localCurrencyRaised,
         uint128 liquidityHaircut
-    ) public pure returns (int256, uint128, int256, uint128) {
-        return Liquidation._calculatePostTradeFactors(cashClaimWithdrawn, netCurrencyAvailable, localCurrencyRequired, localCurrencyRaised, liquidityHaircut);
+    )
+        public
+        pure
+        returns (
+            int256,
+            uint128,
+            int256,
+            uint128
+        )
+    {
+        return
+            Liquidation._calculatePostTradeFactors(
+                cashClaimWithdrawn,
+                netCurrencyAvailable,
+                localCurrencyRequired,
+                localCurrencyRaised,
+                liquidityHaircut
+            );
     }
 
     function calculateLocalCurrencyToTrade(
@@ -105,13 +145,20 @@ contract MockLiquidation is EscrowStorage {
         uint128 localCurrencyBuffer,
         uint128 maxLocalCurrencyDebt
     ) public pure returns (uint128) {
-        return Liquidation._calculateLocalCurrencyToTrade(localCurrencyRequired, liquidationDiscount, localCurrencyBuffer, maxLocalCurrencyDebt);
+        return
+            Liquidation._calculateLocalCurrencyToTrade(
+                localCurrencyRequired,
+                liquidationDiscount,
+                localCurrencyBuffer,
+                maxLocalCurrencyDebt
+            );
     }
 
-    function calculateLiquidityTokenHaircut(
-        int256 postHaircutCashClaim,
-        uint128 liquidityHaircut
-    ) public pure returns (uint128)  {
+    function calculateLiquidityTokenHaircut(int256 postHaircutCashClaim, uint128 liquidityHaircut)
+        public
+        pure
+        returns (uint128)
+    {
         return Liquidation._calculateLiquidityTokenHaircut(postHaircutCashClaim, liquidityHaircut);
     }
 
@@ -131,7 +178,15 @@ contract MockLiquidation is EscrowStorage {
         uint128 amountToRaise,
         address Portfolios
     ) public returns (int256) {
-        return Liquidation._calculateCollateralBalances(payer, payerBalance, collateralCurrency, collateralToSell, amountToRaise, IPortfoliosCallable(Portfolios));
+        return
+            Liquidation._calculateCollateralBalances(
+                payer,
+                payerBalance,
+                collateralCurrency,
+                collateralToSell,
+                amountToRaise,
+                IPortfoliosCallable(Portfolios)
+            );
     }
 }
 
@@ -158,20 +213,16 @@ contract MockPortfolios {
     }
 
     function getClaim() public view returns (uint128, uint128) {
-        uint256 cashClaim = uint256(_cash)
-            .mul(liquidityHaircut)
-            .div(Common.DECIMALS);
+        uint256 cashClaim = uint256(_cash).mul(liquidityHaircut).div(Common.DECIMALS);
 
-        uint256 fCashClaim = uint256(_fCash)
-            .mul(liquidityHaircut)
-            .div(Common.DECIMALS);
+        uint256 fCashClaim = uint256(_fCash).mul(liquidityHaircut).div(Common.DECIMALS);
 
         return (uint128(cashClaim), uint128(fCashClaim));
     }
 
     function raiseCurrentCashViaLiquidityToken(
-        address /* account */,
-        uint16 /* currency */,
+        address, /* account */
+        uint16, /* currency */
         uint128 amount
     ) external returns (uint128) {
         _wasCalled = true;

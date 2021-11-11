@@ -1,6 +1,14 @@
 import chai from "chai";
 import {solidity} from "ethereum-waffle";
-import {fixture, wallets, fixtureLoader, provider, fastForwardToMaturity, CURRENCY, fastForwardToTime} from "./fixtures";
+import {
+    fixture,
+    wallets,
+    fixtureLoader,
+    provider,
+    fastForwardToMaturity,
+    CURRENCY,
+    fastForwardToTime,
+} from "./fixtures";
 import {Wallet} from "ethers";
 
 import {Ierc20 as ERC20} from "../typechain/Ierc20";
@@ -11,15 +19,15 @@ import {TestUtils, BLOCK_TIME_LIMIT} from "./testUtils";
 import {MockAggregator} from "../mocks/MockAggregator";
 import {NotionalDeployer} from "../scripts/NotionalDeployer";
 import {parseEther, BigNumber} from "ethers/utils";
-import { WeiPerEther } from 'ethers/constants';
-import { Iweth } from '../typechain/Iweth';
-import { IAggregator } from '../typechain/IAggregator';
+import {WeiPerEther} from "ethers/constants";
+import {Iweth} from "../typechain/Iweth";
+import {IAggregator} from "../typechain/IAggregator";
 
 import MockWBTCArtifact from "../mocks/MockWBTC.json";
 import MockAggregatorArtfiact from "../mocks/MockAggregator.json";
 
 chai.use(solidity);
-const { expect } = chai;
+const {expect} = chai;
 
 describe("Multi Currency", () => {
     let owner: Wallet;
@@ -85,7 +93,7 @@ describe("Multi Currency", () => {
 
         token[1] = objs.environment.USDC;
         futureCash[1] = newFutureCash;
-        chainlink[1] = objs.environment.USDCETHOracle as unknown as MockAggregator;
+        chainlink[1] = (objs.environment.USDCETHOracle as unknown) as MockAggregator;
 
         await escrow.setReserveAccount(reserve.address);
         for (let c of token) {
@@ -105,12 +113,13 @@ describe("Multi Currency", () => {
         tUSDC = new TestUtils(escrow, futureCash[1], portfolios, token[1], owner, chainlink[1], objs.weth, 2);
 
         const mockWbtc = (await NotionalDeployer.deployContract(owner, MockWBTCArtifact, [], 1)).contract as ERC20;
-        const wbtcOracle = (await NotionalDeployer.deployContract(owner, MockAggregatorArtfiact, [], 1)).contract as MockAggregator;
+        const wbtcOracle = (await NotionalDeployer.deployContract(owner, MockAggregatorArtfiact, [], 1))
+            .contract as MockAggregator;
         await wbtcOracle.setAnswer(10e8);
 
         const wbtcCurrencyId = await notional.listCurrency(
             mockWbtc.address,
-            wbtcOracle as unknown as IAggregator,
+            (wbtcOracle as unknown) as IAggregator,
             parseEther("1.30"),
             false,
             false,
@@ -122,8 +131,8 @@ describe("Multi Currency", () => {
         wbtc = {
             currencyId: wbtcCurrencyId,
             erc20: mockWbtc,
-            chainlink: wbtcOracle
-        }
+            chainlink: wbtcOracle,
+        };
 
         const daiOneYear = await notional.deployCashMarket(
             CURRENCY.DAI,
@@ -152,7 +161,8 @@ describe("Multi Currency", () => {
         expect(await tDai.checkEthBalanceIntegrity([owner, wallet, wallet2])).to.be.true;
 
         expect(await tUSDC.checkBalanceIntegrity([owner, wallet, wallet2, reserve])).to.be.true;
-        expect(await tDai.checkBalanceIntegrity([owner, wallet, wallet2, reserve], tDaiOneYear.futureCash.address)).to.be.true;
+        expect(await tDai.checkBalanceIntegrity([owner, wallet, wallet2, reserve], tDaiOneYear.futureCash.address)).to
+            .be.true;
 
         expect(await tDai.checkMarketIntegrity([owner, wallet, wallet2, reserve], daiMaturities)).to.be.true;
         expect(await tUSDC.checkMarketIntegrity([owner, wallet, wallet2, reserve], usdcMaturities)).to.be.true;
@@ -253,9 +263,9 @@ describe("Multi Currency", () => {
                 .connect(wallet2)
                 .settleCashBalance(CURRENCY.DAI, wbtc.currencyId, wallet.address, parseEther("100"));
         });
-        
+
         it("it must settle matured collateral assets before liquidating", async () => {
-            await tDai.setupLiquidity()
+            await tDai.setupLiquidity();
             await tUSDC.setupLiquidity(owner, 0.5, parseEther("10000"), [1]);
 
             await escrow.connect(wallet).deposit(tDai.token.address, parseEther("100"));
@@ -276,7 +286,7 @@ describe("Multi Currency", () => {
         });
 
         it("it must settle matured collateral assets before settle cash", async () => {
-            await tDai.setupLiquidity()
+            await tDai.setupLiquidity();
             await tUSDC.setupLiquidity(owner, 0.5, parseEther("10000"), [1]);
 
             await escrow.connect(wallet).deposit(tDai.token.address, parseEther("100"));
@@ -298,11 +308,17 @@ describe("Multi Currency", () => {
         beforeEach(async () => {
             await tDai.setupLiquidity(owner, 0.5, parseEther("10000"), [0, 1, 2]);
             await tUSDC.setupLiquidity(owner, 0.5, parseEther("10000"), [0]);
-        })
+        });
 
         it("should settle fCash in collateral currency, only liquidator payments", async () => {
             await tDai.setupSellFutureCash(wallet, undefined, undefined, parseEther("140"));
-            let settleAmount = await tUSDC.setupSellFutureCash(wallet, new BigNumber(96e6), undefined, undefined, CURRENCY.USDC);
+            let settleAmount = await tUSDC.setupSellFutureCash(
+                wallet,
+                new BigNumber(96e6),
+                undefined,
+                undefined,
+                CURRENCY.USDC
+            );
 
             const cashBalances = await escrow.cashBalances(CURRENCY.USDC, wallet.address);
             await escrow.connect(wallet).withdraw(tUSDC.token.address, cashBalances);
@@ -323,7 +339,13 @@ describe("Multi Currency", () => {
 
         it("should settle fCash in collateral currency, both", async () => {
             await tDai.setupSellFutureCash(wallet, undefined, parseEther("70"), parseEther("70"));
-            let settleAmount = await tUSDC.setupSellFutureCash(wallet, new BigNumber(96e6), undefined, undefined, CURRENCY.USDC);
+            let settleAmount = await tUSDC.setupSellFutureCash(
+                wallet,
+                new BigNumber(96e6),
+                undefined,
+                undefined,
+                CURRENCY.USDC
+            );
 
             const cashBalances = await escrow.cashBalances(CURRENCY.USDC, wallet.address);
             await escrow.connect(wallet).withdraw(tUSDC.token.address, cashBalances);
@@ -336,12 +358,8 @@ describe("Multi Currency", () => {
             );
 
             const daiBalance = futureCashPrice.sub(
-                new BigNumber(96e6)
-                    .mul(parseEther("1.02"))
-                    .mul(WeiPerEther)
-                    .div(1e6)
-                    .div(WeiPerEther)
-            )
+                new BigNumber(96e6).mul(parseEther("1.02")).mul(WeiPerEther).div(1e6).div(WeiPerEther)
+            );
 
             const [, remaining] = await tDai.getfCashValue(
                 parseEther("70"),
@@ -394,15 +412,11 @@ describe("Multi Currency", () => {
             await tDai.chainlink.setAnswer(parseEther("0.01"));
 
             const usdcRequired = new BigNumber(96e6);
-            const daiRequired = new BigNumber(96e6)
-                .mul(parseEther("1.06"))
-                .mul(WeiPerEther)
-                .div(1e6)
-                .div(WeiPerEther);
-            const daiAvailable = (await portfolios.freeCollateralView(wallet.address))[1][1]
+            const daiRequired = new BigNumber(96e6).mul(parseEther("1.06")).mul(WeiPerEther).div(1e6).div(WeiPerEther);
+            const daiAvailable = (await portfolios.freeCollateralView(wallet.address))[1][1];
 
             await escrow.liquidatefCash(wallet.address, CURRENCY.USDC, CURRENCY.DAI);
-            const usdcBalance = await escrow.cashBalances(CURRENCY.USDC, wallet.address)
+            const usdcBalance = await escrow.cashBalances(CURRENCY.USDC, wallet.address);
 
             expect(await tDai.hasCashReceiver(wallet)).to.be.false;
             expect(usdcBalance).to.be.above(usdcRequired.mul(daiAvailable).div(daiRequired));
@@ -413,9 +427,7 @@ describe("Multi Currency", () => {
             await tDai.borrowAndWithdraw(wallet, parseEther("100"));
 
             await escrow.connect(wallet).deposit(tDai.token.address, parseEther("130"));
-            await tDai.futureCash
-                .connect(wallet)
-                .takefCash(daiMaturities[1], parseEther("130"), BLOCK_TIME_LIMIT, 0);
+            await tDai.futureCash.connect(wallet).takefCash(daiMaturities[1], parseEther("130"), BLOCK_TIME_LIMIT, 0);
             const cashBalances = await escrow.cashBalances(CURRENCY.DAI, wallet.address);
             await escrow.connect(wallet).withdraw(tDai.token.address, cashBalances);
 
@@ -459,7 +471,7 @@ describe("Multi Currency", () => {
 
         const fcBefore = await portfolios.freeCollateralView(wallet.address);
         // Liquidating Dai for USDC
-        await escrow.connect(wallet2).liquidate(wallet.address, 0, CURRENCY.USDC, CURRENCY.DAI)
+        await escrow.connect(wallet2).liquidate(wallet.address, 0, CURRENCY.USDC, CURRENCY.DAI);
         const fcAfter = await portfolios.freeCollateralView(wallet.address);
         // This is the amount of Dai that is collateralizing dai debts
         expect(await escrow.cashBalances(CURRENCY.DAI, wallet.address)).to.equal(parseEther("100"));
@@ -482,7 +494,7 @@ describe("Multi Currency", () => {
         await chainlink[1].setAnswer(new BigNumber(0.011e6));
 
         // Liquidating Dai for USDC
-        await escrow.connect(wallet2).liquidate(wallet.address, 0, CURRENCY.USDC, CURRENCY.DAI)
+        await escrow.connect(wallet2).liquidate(wallet.address, 0, CURRENCY.USDC, CURRENCY.DAI);
         const fcAfter = await portfolios.freeCollateralView(wallet.address);
         // If there is sufficient collateral available, free collateral should be zero (or here under the amount
         // of usdc dust)
@@ -498,12 +510,14 @@ describe("Multi Currency", () => {
 
         // Make Dai collateralize USDC entirely.
         await escrow.connect(wallet).deposit(token[0].address, parseEther("255"));
-        await tDai.futureCash.connect(wallet).addLiquidity(daiMaturities[1], parseEther("220"), parseEther("250"), 0, 100_000_000, BLOCK_TIME_LIMIT);
+        await tDai.futureCash
+            .connect(wallet)
+            .addLiquidity(daiMaturities[1], parseEther("220"), parseEther("250"), 0, 100_000_000, BLOCK_TIME_LIMIT);
 
         await escrow.connect(wallet).withdraw(weth.address, parseEther("2"));
         await chainlink[1].setAnswer(new BigNumber(0.011e6));
 
-        await escrow.connect(wallet2).liquidate(wallet.address, 0, CURRENCY.USDC, CURRENCY.DAI)
+        await escrow.connect(wallet2).liquidate(wallet.address, 0, CURRENCY.USDC, CURRENCY.DAI);
         expect(await escrow.cashBalances(1, wallet.address)).to.equal(0);
         expect(await tDai.hasLiquidityToken(wallet, daiMaturities[1])).to.be.true;
     }).timeout(50000);
@@ -516,13 +530,15 @@ describe("Multi Currency", () => {
         await tUSDC.borrowAndWithdraw(wallet, new BigNumber(100e6), 1.05, 0, 100_000_000);
 
         await escrow.connect(wallet).deposit(token[0].address, parseEther("350"));
-        await tDai.futureCash.connect(wallet).addLiquidity(daiMaturities[0], parseEther("200"), parseEther("250"), 0, 100_000_000, BLOCK_TIME_LIMIT);
+        await tDai.futureCash
+            .connect(wallet)
+            .addLiquidity(daiMaturities[0], parseEther("200"), parseEther("250"), 0, 100_000_000, BLOCK_TIME_LIMIT);
 
         await escrow.connect(wallet).withdraw(weth.address, parseEther("3.29"));
         await chainlink[1].setAnswer(new BigNumber(0.0108e6));
 
         const fcBefore = await portfolios.freeCollateralView(wallet.address);
-        await escrow.connect(wallet2).liquidate(wallet.address, 0, CURRENCY.USDC, CURRENCY.DAI)
+        await escrow.connect(wallet2).liquidate(wallet.address, 0, CURRENCY.USDC, CURRENCY.DAI);
         const fcAfter = await portfolios.freeCollateralView(wallet.address);
         expect(fcAfter[0]).to.be.above(fcBefore[0]);
     });
@@ -534,7 +550,9 @@ describe("Multi Currency", () => {
 
         await tDai.borrowAndWithdraw(wallet, parseEther("100"), 1.05, 0, 100_000_000);
         await escrow.connect(wallet).deposit(token[0].address, parseEther("100"));
-        await tDai.futureCash.connect(wallet).addLiquidity(daiMaturities[1], parseEther("100"), parseEther("150"), 0, 100_000_000, BLOCK_TIME_LIMIT);
+        await tDai.futureCash
+            .connect(wallet)
+            .addLiquidity(daiMaturities[1], parseEther("100"), parseEther("150"), 0, 100_000_000, BLOCK_TIME_LIMIT);
 
         await escrow.connect(wallet).withdraw(weth.address, parseEther("0.715"));
         await chainlink[0].setAnswer(parseEther("0.012"));
@@ -542,7 +560,7 @@ describe("Multi Currency", () => {
         const ethBalanceBefore = await escrow.cashBalances(CURRENCY.ETH, wallet.address);
 
         // This account is now undercollateralized slightly and the liquidity tokens will recapitalize it
-        await escrow.connect(wallet2).liquidate(wallet.address, 0, CURRENCY.DAI, CURRENCY.ETH)
+        await escrow.connect(wallet2).liquidate(wallet.address, 0, CURRENCY.DAI, CURRENCY.ETH);
         const liquidatorDaiAfter = await token[0].balanceOf(wallet2.address);
 
         // ETH balances have not changed.
@@ -560,17 +578,21 @@ describe("Multi Currency", () => {
 
         await tDai.borrowAndWithdraw(wallet, parseEther("100"), 1.05, 0, 100_000_000);
         await escrow.connect(wallet).deposit(token[0].address, parseEther("10"));
-        await tDai.futureCash.connect(wallet).addLiquidity(daiMaturities[1], parseEther("10"), parseEther("15"), 0, 100_000_000, BLOCK_TIME_LIMIT);
+        await tDai.futureCash
+            .connect(wallet)
+            .addLiquidity(daiMaturities[1], parseEther("10"), parseEther("15"), 0, 100_000_000, BLOCK_TIME_LIMIT);
 
         await chainlink[0].setAnswer(parseEther("0.012"));
 
         const accountDaiBefore = await escrow.cashBalances(CURRENCY.DAI, wallet.address);
-        await escrow.connect(wallet2).liquidate(wallet.address, 0, CURRENCY.DAI, CURRENCY.ETH)
+        await escrow.connect(wallet2).liquidate(wallet.address, 0, CURRENCY.DAI, CURRENCY.ETH);
         const liquidatorDaiAfter = await token[0].balanceOf(wallet2.address);
         const accountDaiAfter = await escrow.cashBalances(CURRENCY.DAI, wallet.address);
 
         // The difference in the delta is how much cashClaim the liquidity tokens had
-        expect(liquidatorDaiAfter.sub(liquidatorDaiBefore).add(accountDaiAfter.sub(accountDaiBefore))).to.equal(parseEther("10"));
+        expect(liquidatorDaiAfter.sub(liquidatorDaiBefore).add(accountDaiAfter.sub(accountDaiBefore))).to.equal(
+            parseEther("10")
+        );
 
         expect(await tDai.isCollateralized(wallet)).to.be.true;
         expect(await tDai.hasLiquidityToken(wallet, daiMaturities[1])).to.be.false;
@@ -587,13 +609,16 @@ describe("Multi Currency", () => {
         await escrow.connect(wallet).deposit(token[0].address, parseEther("220"));
         await escrow.connect(wallet).withdraw(weth.address, parseEther("2.625"));
         const maxMaturity = (await portfolios.getAssets(wallet.address))
-            .map((a) => { return (a.maturity) })
+            .map((a) => {
+                return a.maturity;
+            })
             .sort()[1];
-
 
         await fastForwardToMaturity(provider, maxMaturity);
         await portfolios.settleMaturedAssets(wallet.address);
         await chainlink[1].setAnswer(new BigNumber(0.011e6));
-        await escrow.connect(wallet2).settleCashBalance(CURRENCY.USDC, CURRENCY.DAI, wallet.address, new BigNumber(100e6))
+        await escrow
+            .connect(wallet2)
+            .settleCashBalance(CURRENCY.USDC, CURRENCY.DAI, wallet.address, new BigNumber(100e6));
     });
 }).timeout(50000);

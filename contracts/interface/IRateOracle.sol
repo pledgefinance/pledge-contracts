@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.6.0;
 
-
 /**
  * @title Notional rate oracle interface
  * @notice Contracts implementing this interface are able to provide rates to the asset
