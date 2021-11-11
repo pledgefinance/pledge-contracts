@@ -77,8 +77,9 @@ module.exports = {
         bsctest: {
             url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
         },
-        bsc: {
-            url: "https://bsc-dataseed.binance.org/",
+        bscmainnet: {
+            // url: "https://bsc-dataseed.binance.org/",
+            url: "https://bsc-dataseed1.ninicoin.io",
         },
     },
     etherscan: {
