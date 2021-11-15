@@ -5,7 +5,7 @@ typechain/
 sandbox/chaindb
 sandbox/build
 !.env.local
-.env.bsc-mainnet
+.env.bsc_mainnet
 coverage
 coverage.json
 gasprofile/.cid
