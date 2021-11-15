@@ -21,10 +21,10 @@
         "sloc": "rename 's/\\.sol/\\.c/' contracts/*.sol && scc contracts/* --wide --by-file && rename 's/\\.c/\\.sol/' contracts/*.c",
         "deploy:bsctest:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc ts-node scripts/deploy.ts",
         "verify:bsctest:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc ts-node scripts/verify.ts",
-        "deploy:bsc-mainnet:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc-mainnet ts-node scripts/deploy.ts",
-        "verify:bsc-mainnet:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc-mainnet ts-node scripts/verify.ts",
-        "verify:bsc-mainnet:cash": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc-mainnet ts-node scripts/verify1.ts",
-        "setupLiquidity:bsc-mainnet": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc-mainnet ts-node scripts/setupLiquidity.ts"
+        "deploy:bsc-mainnet:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc_mainnet ts-node scripts/deploy.ts",
+        "verify:bsc-mainnet:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc_mainnet ts-node scripts/verify.ts",
+        "verify:bsc-mainnet:cash": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc_mainnet ts-node scripts/verify1.ts",
+        "setupLiquidity:bsc-mainnet": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc_mainnet ts-node scripts/setupLiquidity.ts"
     },
     "repository": {
         "type": "git",
