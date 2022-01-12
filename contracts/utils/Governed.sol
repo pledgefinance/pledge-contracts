@@ -3,6 +3,7 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "../interface/IEscrowCallable.sol";
+import "../interface/IAirdrop.sol";
 import "../interface/IPortfoliosCallable.sol";
 
 import "../upgradeable/Ownable.sol";
@@ -27,7 +28,8 @@ contract Governed is OpenZeppelinUpgradesOwnable, Initializable {
         Escrow,
         Portfolios,
         ERC1155Token,
-        ERC1155Trade
+        ERC1155Trade,
+        AirDrop
     }
 
     function setContract(CoreContracts name, address contractAddress) public {
@@ -45,6 +47,11 @@ contract Governed is OpenZeppelinUpgradesOwnable, Initializable {
     function Escrow() internal view returns (IEscrowCallable) {
         return IEscrowCallable(contracts[uint256(CoreContracts.Escrow)]);
     }
+
+    function Airdrop() internal view returns (IAirdrop) {
+        return IAirdrop(contracts[uint256(CoreContracts.Airdrop)]);
+    }
+
 
     function Portfolios() internal view returns (IPortfoliosCallable) {
         return IPortfoliosCallable(contracts[uint256(CoreContracts.Portfolios)]);

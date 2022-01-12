@@ -402,6 +402,13 @@ export class NotionalDeployer {
             confirmations
         );
 
+        // log("Setting Notional Contract: AirDrop");
+        // console.log("Setting Notional Contract: Airdrop");
+        // await NotionalDeployer.txMined(
+        //     directory.setContract(CoreContracts.AirDrop, airDropAddress),
+        //     confirmations
+        // );
+
         log("Setting Notional Dependencies: Escrow Dependency");
         console.log("Setting Notional Dependencies: Escrow Dependency");
         await NotionalDeployer.txMined(
