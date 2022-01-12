@@ -24,7 +24,11 @@
         "deploy:bsc-mainnet:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc_mainnet ts-node scripts/deploy.ts",
         "verify:bsc-mainnet:all": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc_mainnet ts-node scripts/verify.ts",
         "verify:bsc-mainnet:cash": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc_mainnet ts-node scripts/verify1.ts",
-        "setupLiquidity:bsc-mainnet": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc_mainnet ts-node scripts/setupLiquidity.ts"
+        "setupLiquidity:bsc-mainnet": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc_mainnet ts-node scripts/setupLiquidity.ts",
+        "removeLiquidity:bsc-mainnet": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc_mainnet ts-node scripts/removeLiquidity.ts",
+        "setupLiquidity:bsctest": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc ts-node scripts/setupLiquidity.ts",
+        "removeLiquidity:bsctest": "DEBUG=* DOTENV_CONFIG_PATH=.env.bsc ts-node scripts/removeLiquidity.ts"
+
     },
     "repository": {
         "type": "git",
