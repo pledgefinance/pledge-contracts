@@ -12,7 +12,7 @@ import {Ierc20 as Erc20} from "../typechain/Ierc20";
 import {BigNumber, parseEther} from "ethers/utils";
 import defaultAccounts from "../test/defaultAccounts.json";
 import {Iweth} from "../typechain/Iweth";
-import {MaxUint256} from "ethers/constants";
+// import {MaxUint256} from "ethers/constants";
 // import {exit} from "process";
 
 const log = Debug("deploy:liquidity");
@@ -30,12 +30,13 @@ const BLOCK_TIME_LIMIT = 2_000_000_000;
 // BUSD - 4
 
 const currencyId = 1;
-const maturityId = 1;
-const depositAmount = 500;
+const maturityId = 0;
+const withdrawAmount = 500;
 const liquidityAmount = 500;
+const shouldRemoveLiquidityFirst = false;
 
 async function main() {
-    log("Setup liquidity start...");
+    log("Remove liquidity start...");
     log("Valid network checking...");
     // if ((process.env.DEPLOY_CHAIN_ID as string) != "56") {
     //     log(`Not running on local environment, using ${process.env.DEPLOY_CHAIN_ID as string} exiting`);
@@ -50,14 +51,19 @@ async function main() {
     );
     const currencyToken = new Contract(await notional.escrow.currencyIdToAddress(currencyId), ERC20Artifact.abi, account) as Erc20;
 
-    // TODO: deposit
-    await txMined(currencyToken.approve(notional.escrow.address, MaxUint256));
-    log(`Deposit $${depositAmount} to Escrow contract...`);
-    await txMined(notional.escrow.deposit(currencyToken.address, parseEther(String(depositAmount))));
+    if(shouldRemoveLiquidityFirst) {
+        log(`Removing $${liquidityAmount} liquidity to 1M Dai market...`);
+        await removeLiquidity(1, notional, account, maturityId, parseEther(String(liquidityAmount)));
+        log(`Withdraw $${withdrawAmount} from Escrow contract...`);
+        await txMined(notional.escrow.withdraw(currencyToken.address, parseEther(String(withdrawAmount))));
 
-    // TODO: first param: currency ID, last param: amount
-    log(`Adding $${liquidityAmount} liquidity to 1M Dai market...`);
-    await initializeLiquidity(currencyId, notional, account, maturityId, parseEther(String(depositAmount)), parseEther(String(liquidityAmount)));
+    } else {
+        log(`Withdraw $${withdrawAmount} from Escrow contract...`);
+        await txMined(notional.escrow.withdraw(currencyToken.address, parseEther(String(withdrawAmount))));
+        log(`Removing $${liquidityAmount} liquidity to 1M Dai market...`);
+        await removeLiquidity(1, notional, account, maturityId, parseEther(String(liquidityAmount)));
+    }
+
 
     const chainId = process.env.DEPLOY_CHAIN_ID as string;
     if (chainId == "1337") {
@@ -69,19 +75,21 @@ async function main() {
     }
 }
 
-async function initializeLiquidity(
+async function removeLiquidity(
     cashGroup: number,
     notional: NotionalDeployer,
     account: Wallet,
     offset: number,
     cash: BigNumber,
-    fCash: BigNumber
 ) {
-
     const fg = await notional.portfolios.getCashGroup(cashGroup);
     const futureCash = new Contract(fg.cashMarket, CashMarketArtifact.abi, account) as CashMarket;
     const maturities = await futureCash.getActiveMaturities();
-    await txMined(futureCash.addLiquidity(maturities[offset], cash, fCash, 0, 100_000_000, BLOCK_TIME_LIMIT));
+
+    console.log('123123 cash market address: ---> ', futureCash.address);
+    console.log('123123 cash maturity: ---> ', maturities[offset]);
+
+    await txMined(futureCash.removeLiquidity(maturities[offset], cash, BLOCK_TIME_LIMIT));
 }
 
 async function txMined(tx: Promise<ethers.ContractTransaction>) {
