@@ -205,17 +205,54 @@ async function main() {
     );
     log(busdId);
 
-    console.log("DAI");
+    // deploy cash markets
+    console.log("currency cash market deploying...");
+    console.log("DAI cash market");
     await notional.deployCashMarket(
         daiId,
         2,
         ONE_MONTH,
         parseEther("1000"),
         new BigNumber(2.5 * BASIS_POINT),
-        new BigNumber(0),
+        new BigNumber(0), // 2/100 * 1e18 (2%)
         1_030_000_000,
         85
     );
+    console.log("USDC cash market");
+    await notional.deployCashMarket(
+        usdcId,
+        2,
+        ONE_MONTH,
+        parseEther("1000"),
+        new BigNumber(2.5 * BASIS_POINT),
+        new BigNumber(0), // 2/100 * 1e18 (2%)
+        1_030_000_000,
+        85
+    );
+    console.log("BTC cash market");
+    await notional.deployCashMarket(
+        btcId,
+        2,
+        ONE_MONTH,
+        parseEther("1000"),
+        new BigNumber(2.5 * BASIS_POINT),
+        new BigNumber(0), // 2/100 * 1e18 (2%)
+        1_030_000_000,
+        85
+    );
+    console.log("BUSD cash market");
+    await notional.deployCashMarket(
+        busdId,
+        2,
+        ONE_MONTH,
+        parseEther("1000"),
+        new BigNumber(2.5 * BASIS_POINT),
+        new BigNumber(0), // 2/100 * 1e18 (2%)
+        1_030_000_000,
+        85
+    );
+
+    
 
     const outputFile = path.join(__dirname, ("../" + process.env.CONTRACTS_FILE) as string);
     await notional.saveAddresses(outputFile);
