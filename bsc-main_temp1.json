@@ -1,15 +1,15 @@
 {
-  "chainId": 97,
+  "chainId": 56,
   "networkName": "unknown",
-  "escrow": "0x27f4444b565e188b5824DBB5B014d1017764B672",
-  "portfolios": "0x636Ec1659DC15a4Da8eB20f6E7b5C59ec0F74985",
+  "escrow": "0x9C2Bb88C2b27d3BCdEf62059F7fB96d1782Fa271",
+  "portfolios": "0x5747aB69349459478B2aF93159E1f0505A7b7cd1",
   "proxyAdmin": "0x5eb52393Dab8F140c0D3bf2051543C7F6435e50C",
-  "proxyFactory": "0xe580dbE1A81Cfe352E45B2e76D0f8b3f20860389",
-  "directory": "0x2eCF43e9416b22aB3f6F1a8Bfaa2510b7dB9AB5d",
-  "erc1155": "0x20CDBE3DB73B375769E529148b04296450B71194",
-  "erc1155trade": "0x4f65D437DbE92425be924B0a070ab668b35e5016",
+  "proxyFactory": "0x12C8D78178b9e3b5F0c8c06a3a71d23fc3Cd4E4a",
+  "directory": "0x28065024F833a2f6229501573e7a2c2a3e4A3a26",
+  "erc1155": "0x75a58d2C368039110A175aEBFA11Bd23B1c12De3",
+  "erc1155trade": "0x6fe3Fa58e80Ca33e5e6E2d44c2B11D64E25D5477",
   "cashMarketLogic": "0xe574cab4c286691863bE8946E567efeD39f70eBe",
-  "startBlock": 14138654,
+  "startBlock": 11769463,
   "defaultConfirmations": 3,
   "libraries": {
     "Liquidation": "0xE799C67FDc593643D4B1D4D4CA998F331F4A2487",
@@ -25,5 +25,5 @@
     "ERC1155Token": "0x82983dcf38bb527ae5bcbb7d1b938fb889547804f7201793d728824e00639ff7",
     "ERC1155Trade": "0xfda9841c5891de378c520ef3db6d9a90a283b7e34349f85407f832bac3fdc4f4"
   },
-  "gitHash": "c5ddf1a34e729c369d0f0929c6a58aceba2523e1"
+  "gitHash": "94adc7d7cfe6f13687fb570ac102d0a9f5f2a030"
 }

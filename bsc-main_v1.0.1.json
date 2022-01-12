@@ -1,0 +1,29 @@
+{
+  "chainId": 56,
+  "networkName": "unknown",
+  "escrow": "0x0795E2cd771788572b61BeA45Abd6E9a8FC8D9F0",
+  "portfolios": "0xa3D3D516Fc766498e6b5e552af67640a99B078bB",
+  "proxyAdmin": "0xB1d912E448596FebBeF4568488fb7b02e5379F9e",
+  "proxyFactory": "0x12C8D78178b9e3b5F0c8c06a3a71d23fc3Cd4E4a",
+  "directory": "0x0cfCE491Eae305B01392eDAa2F99f5338e5C2F71",
+  "erc1155": "0x643d22feEfA45421a7eBF878c633866475052085",
+  "erc1155trade": "0x298a5694cf38E62f20d02DFb80d3122C566B66F5",
+  "cashMarketLogic": "0x85A77DC8643CA79cE39d1c9c7062B5B0Dac164D5",
+  "startBlock": 14077009,
+  "defaultConfirmations": 3,
+  "libraries": {
+    "Liquidation": "0xf758D994476840980aAF2550757f9236DEc8f4a7",
+    "RiskFramework": "0xD911A31985bC91AD250027B3d24D2d88d4Af9D89"
+  },
+  "deployedCodeHash": {
+    "Liquidation": "0x34a70f707018f2e9cd95db6b999c8f81ffb5b1746f65d01d9b67192516e1323b",
+    "RiskFramework": "0xf11d5041d19fe34c343817b3882cd3f33e799a10a9934b17fc7c16d21078b95f",
+    "CashMarket": "0x83fcd790309f79f5e0b582433bd4e5fb7b1f48522d25a0ba750c2e29a79ef44f",
+    "Directory": "0xcabafb5bcca1f1d749aaa072c2044b5d2d53430bfd2ca1a80f714289e4e8d7cc",
+    "Escrow": "0x9d71d1c0e0aa677d90a31718b9e2992f9a7b6f66e2e588b49aebc44c4af6128b",
+    "Portfolios": "0x47add1457f4f089c7b295913e19b14c13225d9a4a02d5fa2c0674abdfef130d5",
+    "ERC1155Token": "0x82983dcf38bb527ae5bcbb7d1b938fb889547804f7201793d728824e00639ff7",
+    "ERC1155Trade": "0xfda9841c5891de378c520ef3db6d9a90a283b7e34349f85407f832bac3fdc4f4"
+  },
+  "gitHash": "c5ddf1a34e729c369d0f0929c6a58aceba2523e1"
+}
