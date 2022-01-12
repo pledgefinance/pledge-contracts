@@ -54,6 +54,7 @@ export const enum CoreContracts {
     Portfolios,
     ERC1155Token,
     ERC1155Trade,
+    AirDrop
 }
 
 export class NotionalDeployer {
@@ -399,6 +400,13 @@ export class NotionalDeployer {
         console.log("Setting Notional Contract: ERC1155Trade");
         await NotionalDeployer.txMined(
             directory.setContract(CoreContracts.ERC1155Trade, erc1155trade.address),
+            confirmations
+        );
+
+        log("Setting Notional Contract: AirDrop");
+        console.log("Setting Notional Contract: AirDrop");
+        await NotionalDeployer.txMined(
+            directory.setContract(CoreContracts.AirDrop, "0xCc1FeC6Ec19d53470e26171B01bE4e61b5c9f16E"),
             confirmations
         );
 

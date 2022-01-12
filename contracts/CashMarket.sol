@@ -34,10 +34,11 @@ contract CashMarket is Governed {
     function initializeDependencies() external {
         // Setting dependencies can only be done once here. With proxy contracts the addresses shouldn't
         // change as we upgrade the logic.
-        Governed.CoreContracts[] memory dependencies = new Governed.CoreContracts[](3);
+        Governed.CoreContracts[] memory dependencies = new Governed.CoreContracts[](4);
         dependencies[0] = CoreContracts.Escrow;
         dependencies[1] = CoreContracts.Portfolios;
         dependencies[2] = CoreContracts.ERC1155Trade;
+        dependencies[3] = CoreContracts.AirDrop;
         _setDependencies(dependencies);
     }
 
@@ -789,6 +790,8 @@ contract CashMarket is Governed {
         // Move the cash from the sender to the contract address. This must happen before the
         // insert trade call below.
         Escrow().depositIntoMarket(account, CASH_GROUP, cash, fee);
+
+        // lend
 
         Common.Asset memory asset = Common.Asset(CASH_GROUP, 0, maturity, Common.getCashReceiver(), 0, fCashAmount);
 
