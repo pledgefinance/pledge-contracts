@@ -3,6 +3,7 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "../interface/IEscrowCallable.sol";
+import "../interface/IEscrow.sol";
 import "../interface/IAirdrop.sol";
 import "../interface/IPortfoliosCallable.sol";
 

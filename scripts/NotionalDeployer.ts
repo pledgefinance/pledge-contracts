@@ -139,7 +139,8 @@ export class NotionalDeployer {
         } else if (process.env.GAS_LIMIT != null) {
             gasLimit = parseInt(process.env.GAS_LIMIT);
         } else {
-            gasLimit = 20_000_000;
+            // gasLimit = 9_500_000;
+            gasLimit = 6721975;
         }
         log(`Gas limit setting ${process.env.GAS_LIMIT} and ${gasLimit}`);
 
@@ -274,6 +275,10 @@ export class NotionalDeployer {
         fCashMaxHaircut: BigNumber,
         confirmations = 3
     ) => {
+        if (process.env.AIRDROP_ADDRESS == null) {
+            console.log("You need set AIRDROP_ADDRESS on env file")
+            throw new Error("You need set AIRDROP_ADDRESS on env file")
+        }
         const startBlock = await owner.provider.getBlockNumber();
         const libraries = new Map<string, Contract>();
         // Deploy transactions are used to determine if bytecode has changed
@@ -406,7 +411,7 @@ export class NotionalDeployer {
         log("Setting Notional Contract: AirDrop");
         console.log("Setting Notional Contract: AirDrop");
         await NotionalDeployer.txMined(
-            directory.setContract(CoreContracts.AirDrop, "0xCc1FeC6Ec19d53470e26171B01bE4e61b5c9f16E"),
+            directory.setContract(CoreContracts.AirDrop, process.env.AIRDROP_ADDRESS),
             confirmations
         );
 

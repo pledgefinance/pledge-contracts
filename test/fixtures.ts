@@ -1,4 +1,4 @@
-import {waffle, ethers} from "@nomiclabs/buidler";
+import {waffle, ethers, network} from "@nomiclabs/buidler";
 import {createFixtureLoader} from "ethereum-waffle";
 import {Wallet, providers} from "ethers";
 import {NotionalDeployer} from "../scripts/NotionalDeployer";
@@ -8,6 +8,7 @@ import {deployLocal} from "../scripts/deployEnvironment";
 import {WeiPerEther} from "ethers/constants";
 import {MockAggregator} from "../mocks/MockAggregator";
 import {debug} from "debug";
+import {config} from "dotenv";
 
 const log = debug("test:fixtures");
 
@@ -15,6 +16,9 @@ const log = debug("test:fixtures");
 ethers.errors.setLogLevel("error");
 export const provider = waffle.provider;
 export const wallets = defaultAccounts.map((acc) => {
+    if (network.name === "localGanache") {
+        return new Wallet("0x839657917aa5795ce2a46e86b6d389f5aec7958876b69dc771e344f68d55368d", provider);
+    }
     return new Wallet(acc.secretKey, provider);
 });
 export const fixtureLoader = createFixtureLoader(provider, [wallets[0]]);
@@ -32,6 +36,10 @@ export const CURRENCY = {
  */
 export async function fixture(provider: providers.Provider, [owner]: Wallet[]) {
     log("Starting to load fixtures");
+    const envPath = `${process.env.DOTENV_CONFIG_PATH}`;
+    log(`Loading enviromnent from ${envPath} from ${process.cwd()}`);
+    config({path: envPath});
+
     const environment = await deployLocal(owner);
     const notional = await NotionalDeployer.deploy(
         environment.deploymentWallet,

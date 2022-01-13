@@ -11,6 +11,7 @@ import "./utils/Governed.sol";
 import "./utils/Common.sol";
 
 import "@openzeppelin/contracts/utils/SafeCast.sol";
+import "@nomiclabs/buidler/console.sol";
 
 /**
  * @title CashMarket
@@ -374,6 +375,8 @@ contract CashMarket is Governed {
         // This is the CASH_PAYER
         assets[1] = Common.Asset(CASH_GROUP, 0, maturity, Common.getCashPayer(), 0, fCash);
 
+        Airdrop().updateFromLiquidity(account, _tokenAddress(), cash);
+
         emit AddLiquidity(account, maturity, liquidityTokenAmount, fCash, cash);
 
         return assets;
@@ -664,6 +667,8 @@ contract CashMarket is Governed {
         // The sender now has an obligation to pay cash at maturity.
         Common.Asset memory asset = Common.Asset(CASH_GROUP, 0, maturity, Common.getCashPayer(), 0, fCashAmount);
 
+        Airdrop().updateFromBorrow(account, _tokenAddress(), fCashAmount);
+
         emit TakeCurrentCash(account, maturity, fCashAmount, cash, fee);
 
         return (asset, cash);
@@ -791,10 +796,13 @@ contract CashMarket is Governed {
         // insert trade call below.
         Escrow().depositIntoMarket(account, CASH_GROUP, cash, fee);
 
+        console.log(" Airdrop: %s", address(Airdrop()));
+
         // lend
 
         Common.Asset memory asset = Common.Asset(CASH_GROUP, 0, maturity, Common.getCashReceiver(), 0, fCashAmount);
 
+        Airdrop().updateFromLend(account, _tokenAddress(), fCashAmount);
         emit TakefCash(account, maturity, fCashAmount, cash, fee);
 
         return (asset, cash);
@@ -1210,5 +1218,10 @@ contract CashMarket is Governed {
         // Will pass int128 conversion after the overflow checks above. We convert to a uint here because we have
         // already checked that proportion is positive and so we cannot return a negative log.
         return (ABDKMath64x64.toUInt(int128(result)), true);
+    }
+
+    function _tokenAddress() internal returns (address tokenAddress) {
+        Common.CashGroup memory fcg = Portfolios().getCashGroup(CASH_GROUP);
+        tokenAddress = IEscrow(address(Escrow())).currencyIdToAddress(fcg.currency);
     }
 }
