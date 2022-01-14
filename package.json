@@ -5,6 +5,7 @@
   "description": "Smart contracts for Pledger Finance",
   "author": "Justin Gao <flyingforce@gmail.com>",
   "scripts": {
+    "remix": "remixd -s ./ https://remix.ethereum.org/",
     "compile": "npx buidler compile",
     "build": "npm run compile && npx buidler typechain",
     "sandbox:build": "cd sandbox && ./rebuild.sh",

@@ -12,10 +12,12 @@ import MockAggregatorArtfiact from "../mocks/MockAggregator.json";
 import CreateProxyFactoryArtifact from "../build/CreateProxyFactory.json";
 import Debug from "debug";
 import {Wallet, Contract} from "ethers";
+// import {WeiPerEther} from "ethers/constants";
 import {Environment, NotionalDeployer} from "./NotionalDeployer";
 import {parseEther, BigNumber} from "ethers/utils";
 import {CreateProxyFactory} from "../typechain/CreateProxyFactory";
 
+import {WeiPerEther} from "ethers/constants";
 const log = Debug("test:deployEnvironment");
 
 export async function deployTestEnvironment(
@@ -35,6 +37,8 @@ export async function deployTestEnvironment(
         .contract as ERC20;
     const busd = (await NotionalDeployer.deployContract(deployWallet, MockUSDCArtifact, [], confirmations))
         .contract as ERC20;
+    const plgr = (await NotionalDeployer.deployContract(deployWallet, MockUSDCArtifact, [], confirmations))
+        .contract as ERC20;
 
     const daiOracle = (await NotionalDeployer.deployContract(deployWallet, MockAggregatorArtfiact, [], confirmations))
         .contract as MockAggregator;
@@ -42,6 +46,60 @@ export async function deployTestEnvironment(
     const usdcOracle = (await NotionalDeployer.deployContract(deployWallet, MockAggregatorArtfiact, [], confirmations))
         .contract as MockAggregator;
     await NotionalDeployer.txMined(usdcOracle.setAnswer(new BigNumber(0.01e6)), confirmations);
+
+    const factory = await NotionalDeployer.deployContract(
+        deployWallet,
+        "PancakeFactory",
+        [deployWallet.address],
+        confirmations
+    );
+
+    const router = await NotionalDeployer.deployContract(
+        deployWallet,
+        "PancakeRouter",
+        [factory.contract.address, wethAddress],
+        confirmations
+    );
+
+    await factory.contract.createPair(btc.address, busd.address);
+
+    await btc.approve(router.contract.address, WeiPerEther.mul(10000000000))
+    await usdc.approve(router.contract.address, WeiPerEther.mul(10000000000))
+    await busd.approve(router.contract.address, WeiPerEther.mul(10000000000))
+    await dai.approve(router.contract.address, WeiPerEther.mul(10000000000))
+
+    await router.contract.addLiquidity(
+        btc.address,
+        busd.address,
+        WeiPerEther.mul(10000),
+        WeiPerEther.mul(1000),
+        1,
+        1,
+        deployWallet.address,
+        0
+    );
+
+    await router.contract.addLiquidity(
+        usdc.address,
+        dai.address,
+        WeiPerEther.mul(1000),
+        WeiPerEther.mul(1000),
+        1,
+        1,
+        deployWallet.address,
+        0
+    );
+
+    await router.contract.addLiquidity(
+        busd.address,
+        dai.address,
+        WeiPerEther.mul(1000),
+        WeiPerEther.mul(1000),
+        1,
+        1,
+        deployWallet.address,
+        0
+    );
 
     return {
         deploymentWallet: deployWallet,
@@ -51,6 +109,7 @@ export async function deployTestEnvironment(
         USDC: usdc,
         BTC: btc,
         BUSD: busd,
+        PLGR: plgr,
         DAIETHOracle: (daiOracle as unknown) as IAggregator,
         USDCETHOracle: (usdcOracle as unknown) as IAggregator,
         BTCOracle: (usdcOracle as unknown) as IAggregator,
@@ -60,6 +119,7 @@ export async function deployTestEnvironment(
             CreateProxyFactoryArtifact.abi,
             deployWallet
         ) as CreateProxyFactory,
+        RouterAddress: router.contract.address
     };
 }
 
