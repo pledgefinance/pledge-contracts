@@ -11,3 +11,7 @@ coverage
 coverage.json
 gasprofile/.cid
 gasprofile/gaslog.csv
+
+
+.DS_Store
+*/.DS_Store

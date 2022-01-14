@@ -9,6 +9,9 @@ import EscrowArtifact from "../build/Escrow.json";
 import PortfoliosArtifact from "../build/Portfolios.json";
 import ERC1155TokenArtifact from "../build/ERC1155Token.json";
 import ERC1155TradeArtifact from "../build/ERC1155Trade.json";
+import StakerArtifact from "../build/Staker.json";
+import VaultArtifact from "../build/Vault.json";
+import AirdropArtifact from "../build/AirDrop.json";
 import ProxyAdminArtifact from "../build/ProxyAdmin.json";
 import CreateProxyFactoryArtifact from "../build/CreateProxyFactory.json";
 import AdminUpgradeabilityProxyArtifact from "../build/AdminUpgradeabilityProxy.json";
@@ -18,6 +21,9 @@ import {Portfolios} from "../typechain/Portfolios";
 import {Escrow} from "../typechain/Escrow";
 import {ProxyAdmin} from "../typechain/ProxyAdmin";
 import {Directory} from "../typechain/Directory";
+import {IStaker} from "../typechain/IStaker";
+import {IAirdrop} from "../typechain/IAirdrop";
+import {IVault} from "../typechain/IVault";
 import {Ierc20 as ERC20} from "../typechain/Ierc20";
 import {CashMarket} from "../typechain/CashMarket";
 import {Erc1155Token as ERC1155Token} from "../typechain/Erc1155Token";
@@ -41,11 +47,13 @@ export interface Environment {
     USDC: ERC20;
     BTC: ERC20;
     BUSD: ERC20;
+    PLGR: ERC20;
     DAIETHOracle: IAggregator;
     USDCETHOracle: IAggregator;
     BTCOracle: IAggregator;
     BUSDOracle: IAggregator;
     proxyFactory: CreateProxyFactory;
+    RouterAddress: any;
 }
 
 // This is a mirror of the enum in Governed
@@ -54,6 +62,7 @@ export const enum CoreContracts {
     Portfolios,
     ERC1155Token,
     ERC1155Trade,
+    AirDrop,
 }
 
 export class NotionalDeployer {
@@ -71,7 +80,10 @@ export class NotionalDeployer {
         public startBlock: number,
         public libraries: Map<string, Contract>,
         public deployedCodeHash: Map<string, string>,
-        public defaultConfirmations: number
+        public defaultConfirmations: number,
+        public staker: IStaker,
+        public airdrop: IAirdrop,
+        public vault: IVault
     ) {}
 
     public coreContractToContract = (contract: CoreContracts) => {
@@ -138,7 +150,8 @@ export class NotionalDeployer {
         } else if (process.env.GAS_LIMIT != null) {
             gasLimit = parseInt(process.env.GAS_LIMIT);
         } else {
-            gasLimit = 20_000_000;
+            // gasLimit = 9_500_000;
+            gasLimit = 6721975;
         }
         log(`Gas limit setting ${process.env.GAS_LIMIT} and ${gasLimit}`);
 
@@ -273,6 +286,10 @@ export class NotionalDeployer {
         fCashMaxHaircut: BigNumber,
         confirmations = 3
     ) => {
+        if (process.env.AIRDROP_ADDRESS == null) {
+            console.log("You need set AIRDROP_ADDRESS on env file");
+            throw new Error("You need set AIRDROP_ADDRESS on env file");
+        }
         const startBlock = await owner.provider.getBlockNumber();
         const libraries = new Map<string, Contract>();
         // Deploy transactions are used to determine if bytecode has changed
@@ -379,6 +396,27 @@ export class NotionalDeployer {
             environment.proxyFactory
         )) as ERC1155Trade;
 
+        const airdrop = (
+            await NotionalDeployer.deployContract(
+                owner,
+                "AirDrop",
+                [environment.PLGR.address, environment.RouterAddress],
+                confirmations
+            )
+        ).contract as IAirdrop;
+
+        const vault = (await NotionalDeployer.deployContract(owner, "Vault", [environment.PLGR.address], confirmations))
+            .contract as IVault;
+
+        const staker = (
+            await NotionalDeployer.deployContract(
+                owner,
+                "Staker",
+                [environment.PLGR.address, vault.address, [airdrop.address, owner.address]],
+                confirmations
+            )
+        ).contract as IStaker;
+
         // Set dependencies
         log("Setting Notional Contract: Escrow");
         console.log("Setting Notional Contract: Escrow");
@@ -402,12 +440,11 @@ export class NotionalDeployer {
             confirmations
         );
 
-        // log("Setting Notional Contract: AirDrop");
-        // console.log("Setting Notional Contract: Airdrop");
-        // await NotionalDeployer.txMined(
-        //     directory.setContract(CoreContracts.AirDrop, airDropAddress),
-        //     confirmations
-        // );
+        log("Setting Notional Contract: AirDrop");
+        console.log("Setting Notional Contract: AirDrop");
+        await NotionalDeployer.txMined(directory.setContract(CoreContracts.AirDrop, airdrop.address), confirmations);
+
+        await NotionalDeployer.txMined(airdrop.setStaker(staker.address), confirmations);
 
         log("Setting Notional Dependencies: Escrow Dependency");
         console.log("Setting Notional Dependencies: Escrow Dependency");
@@ -467,7 +504,10 @@ export class NotionalDeployer {
             startBlock,
             libraries,
             deployedCodeHash,
-            confirmations
+            confirmations,
+            staker,
+            airdrop,
+            vault
         );
     };
 
@@ -529,6 +569,12 @@ export class NotionalDeployer {
         log("Creating cash group...");
         await NotionalDeployer.txMined(
             this.portfolios.createCashGroup(numMaturities, maturityLength, precision, currencyId, cashMarket.address),
+            this.defaultConfirmations
+        );
+
+        log("Set Airdrop enable");
+        await NotionalDeployer.txMined(
+            this.airdrop.setPledges([cashMarket.address], [true]),
             this.defaultConfirmations
         );
 
@@ -728,6 +774,9 @@ export class NotionalDeployer {
         const erc1155 = new Contract(addresses.erc1155, ERC1155TokenArtifact.abi, owner) as ERC1155Token;
         const erc1155trade = new Contract(addresses.erc1155trade, ERC1155TradeArtifact.abi, owner) as ERC1155Trade;
         const cashMarketLogicAddress = addresses.cashMarketLogic as string;
+        const staker = new Contract(addresses.staker, StakerArtifact.abi, owner) as IStaker;
+        const vault = new Contract(addresses.vault, VaultArtifact.abi, owner) as IVault;
+        const airdrop = new Contract(addresses.airdrop, AirdropArtifact.abi, owner) as IAirdrop;
         const libraries = Object.keys(addresses.libraries).reduce((obj, name) => {
             const contract = new Contract(addresses.libraries[name], NotionalDeployer.loadArtifact(name).abi, owner);
             obj.set(name, contract);
@@ -753,7 +802,10 @@ export class NotionalDeployer {
             addresses.startBlock,
             libraries,
             deployedCodeHash,
-            addresses.defaultConfirmations
+            addresses.defaultConfirmations,
+            staker,
+            airdrop,
+            vault
         );
     };
 

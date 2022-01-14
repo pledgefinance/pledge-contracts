@@ -3,6 +3,7 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "../interface/IEscrowCallable.sol";
+import "../interface/IEscrow.sol";
 import "../interface/IAirdrop.sol";
 import "../interface/IPortfoliosCallable.sol";
 
@@ -49,10 +50,16 @@ contract Governed is OpenZeppelinUpgradesOwnable, Initializable {
     }
 
     function Airdrop() internal view returns (IAirdrop) {
+<<<<<<< HEAD
         return IAirdrop(contracts[uint256(CoreContracts.Airdrop)]);
     }
 
 
+=======
+        return IAirdrop(contracts[uint256(CoreContracts.AirDrop)]);
+    }
+
+>>>>>>> 242c2f596a30d79849228a51e1c7331b4a01aada
     function Portfolios() internal view returns (IPortfoliosCallable) {
         return IPortfoliosCallable(contracts[uint256(CoreContracts.Portfolios)]);
     }
