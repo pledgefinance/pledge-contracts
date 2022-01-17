@@ -1,14 +1,14 @@
-import {waffle, ethers, network} from "@nomiclabs/buidler";
-import {createFixtureLoader} from "ethereum-waffle";
-import {Wallet, providers} from "ethers";
-import {NotionalDeployer} from "../scripts/NotionalDeployer";
+import { waffle, ethers, network } from "@nomiclabs/buidler";
+import { createFixtureLoader } from "ethereum-waffle";
+import { Wallet, providers } from "ethers";
+import { NotionalDeployer } from "../scripts/NotionalDeployer";
 import defaultAccounts from "./defaultAccounts.json";
-import {parseEther, BigNumber} from "ethers/utils";
-import {deployLocal} from "../scripts/deployEnvironment";
-import {WeiPerEther} from "ethers/constants";
-import {MockAggregator} from "../mocks/MockAggregator";
-import {debug} from "debug";
-import {config} from "dotenv";
+import { parseEther, BigNumber } from "ethers/utils";
+import { deployLocal } from "../scripts/deployEnvironment";
+import { WeiPerEther } from "ethers/constants";
+import { MockAggregator } from "../mocks/MockAggregator";
+import { debug } from "debug";
+import { config } from "dotenv";
 
 const log = debug("test:fixtures");
 
@@ -27,6 +27,7 @@ export const CURRENCY = {
     DAI: 1,
     USDC: 2,
     WBTC: 3,
+    WBNB: 1,
 };
 
 /**
@@ -38,7 +39,7 @@ export async function fixture(provider: providers.Provider, [owner]: Wallet[]) {
     log("Starting to load fixtures");
     const envPath = `${process.env.DOTENV_CONFIG_PATH}`;
     log(`Loading enviromnent from ${envPath} from ${process.cwd()}`);
-    config({path: envPath});
+    config({ path: envPath });
 
     const environment = await deployLocal(owner);
     const notional = await NotionalDeployer.deploy(
@@ -77,13 +78,28 @@ export async function fixture(provider: providers.Provider, [owner]: Wallet[]) {
         1_100_000_000,
         85
     );
+    
+    // currencyId = await notional.listCurrency(
+    //     environment.WBNB.address,
+    //     environment.USDCETHOracle,
+    //     parseEther("1.3"),
+    //     false,
+    //     false,
+    //     WeiPerEther, // TODO: check this
+    //     false
+    // );
+
+
+    await environment.PLGR.transfer(notional.vault.address, WeiPerEther.mul(10000000000));
 
     return {
         erc20: environment.DAI,
+        plgr: environment.PLGR,
+        busd: environment.BUSD,
         cashMarket,
         escrow: notional.escrow,
         owner,
-        chainlink: (environment.DAIETHOracle as unknown) as MockAggregator,
+        chainlink: environment.DAIETHOracle as unknown as MockAggregator,
         portfolios: notional.portfolios,
         proxyAdmin: notional.proxyAdmin,
         erc1155: notional.erc1155,

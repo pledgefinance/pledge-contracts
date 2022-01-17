@@ -220,7 +220,7 @@ contract AirDrop is Ownable {
                 }
             }
             console.log("plgr amount: ", plgrAmount);
-            // IStaker(staker).mint(user, plgrAmount);
+            IStaker(staker).mint(user, plgrAmount);
         }
         _reset(_count);
     }

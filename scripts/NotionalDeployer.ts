@@ -42,6 +42,7 @@ const log = Debug("notional:deploy");
 export interface Environment {
     deploymentWallet: Wallet;
     WETH: IWETH;
+    WBNB: IWETH;
     ERC1820: IERC1820Registry;
     DAI: ERC20;
     USDC: ERC20;
@@ -286,10 +287,6 @@ export class NotionalDeployer {
         fCashMaxHaircut: BigNumber,
         confirmations = 3
     ) => {
-        if (process.env.AIRDROP_ADDRESS == null) {
-            console.log("You need set AIRDROP_ADDRESS on env file");
-            throw new Error("You need set AIRDROP_ADDRESS on env file");
-        }
         const startBlock = await owner.provider.getBlockNumber();
         const libraries = new Map<string, Contract>();
         // Deploy transactions are used to determine if bytecode has changed
@@ -445,6 +442,7 @@ export class NotionalDeployer {
         await NotionalDeployer.txMined(directory.setContract(CoreContracts.AirDrop, airdrop.address), confirmations);
 
         await NotionalDeployer.txMined(airdrop.setStaker(staker.address), confirmations);
+        await NotionalDeployer.txMined(vault.setStaker(staker.address), confirmations);
 
         log("Setting Notional Dependencies: Escrow Dependency");
         console.log("Setting Notional Dependencies: Escrow Dependency");

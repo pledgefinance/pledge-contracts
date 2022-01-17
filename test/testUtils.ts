@@ -232,7 +232,7 @@ export class TestUtils {
             return this.hasAsset(account, AssetType.LIQUIDITY_TOKEN, maturity, tokens);
         } else {
             return (
-                this.hasAsset(account, AssetType.LIQUIDITY_TOKEN, maturity, tokens) &&
+                await this.hasAsset(account, AssetType.LIQUIDITY_TOKEN, maturity, tokens) &&
                 this.hasCashPayer(account, maturity, payer === undefined ? tokens : payer)
             );
         }
