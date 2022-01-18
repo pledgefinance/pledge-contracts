@@ -18,6 +18,9 @@ contract AirDrop is Ownable {
     using SafeERC20 for IERC20;
     using EnumerableSet for EnumerableSet.AddressSet;
 
+    mapping(address => bool) public governace;
+    mapping(address => bool) public pledge;
+
     // deposit users
     EnumerableSet.AddressSet internal depositUsers;
     EnumerableSet.AddressSet internal depositTokens;
@@ -54,26 +57,22 @@ contract AirDrop is Ownable {
 
     address public router;
     address public staker;
-    mapping(address => bool) public pledge;
 
     mapping(address => address[]) tokenPaths;
 
-    constructor(address _rewardToken, address _router) public {
+    constructor(address _rewardToken) public {
+        governace[msg.sender] = true;
         rewardToken = IERC20(_rewardToken);
-        router = _router;
         lendRewardAmount = _caculateRewardAmount(lendRatio);
-        console.log("lendRewardAmount: %s", lendRewardAmount);
         borrowRewardAmount = _caculateRewardAmount(borrowRatio);
-        console.log("borrowRewarAmount: %s", borrowRewardAmount);
         lpRewardAmount = _caculateRewardAmount(lpRatio);
-        console.log("lpRewardAmount: %s", lpRewardAmount);
     }
 
-    function setRouter(address _router) external onlyOwner {
+    function setRouter(address _router) external onlyGovernace {
         router = _router;
     }
 
-    function setStaker(address _staker) external onlyOwner {
+    function setStaker(address _staker) external onlyGovernace {
         staker = _staker;
     }
 
@@ -83,7 +82,13 @@ contract AirDrop is Ownable {
         }
     }
 
-    function setPaths(address _token, address[] calldata _paths) external onlyOwner {
+    function setGovernace(address[] calldata _address, bool[] calldata _enable) external onlyOwner {
+        for (uint256 index = 0; index < _address.length; index++) {
+            governace[_address[index]] = _enable[index];
+        }
+    }
+
+    function setPaths(address _token, address[] calldata _paths) external onlyGovernace {
         tokenPaths[_token] = _paths;
     }
 
@@ -92,17 +97,14 @@ contract AirDrop is Ownable {
         uint256 _lendRatio,
         uint256 _borrowRatio,
         uint256 _lpRatio
-    ) external onlyOwner {
+    ) external onlyGovernace {
         dayPer = _dayPer;
         lpRatio = _lpRatio;
         lendRatio = _lendRatio;
         borrowRatio = _borrowRatio;
         lendRewardAmount = _caculateRewardAmount(_lendRatio);
-        console.log("lendRewardAmount: %s", lendRewardAmount);
         borrowRewardAmount = _caculateRewardAmount(_borrowRatio);
-        console.log("borrowRewarAmount: %s", borrowRewardAmount);
         lpRewardAmount = _caculateRewardAmount(_lpRatio);
-        console.log("lpRewardAmount: %s", lpRewardAmount);
     }
 
     function _caculateRewardAmount(uint256 _ratio) internal view returns (uint256) {
@@ -144,7 +146,7 @@ contract AirDrop is Ownable {
         depositTokens.add(_token);
     }
 
-    function calculateEarn() external onlyOwner {
+    function calculateEarn() external onlyGovernace {
         for (uint256 index = 0; index < depositTokens.length(); index++) {
             address token = depositTokens.at(index);
             uint256 price = _tokenPrice(token);
@@ -152,7 +154,6 @@ contract AirDrop is Ownable {
             lendTotalValue += lendAmount[token].mul(price);
             borrowTotalValue += borrowAmount[token].mul(price);
             lpTotalValue += lpAmount[token].mul(price);
-            console.log("token Price: %s", price);
         }
 
         if (lendTotalValue > 0) {
@@ -160,9 +161,6 @@ contract AirDrop is Ownable {
                 lendTotalValue = lendTotalValue.div(1e18);
             }
             lendRewardPer = lendRewardAmount.div(lendTotalValue);
-            console.log("lendTotalValue: %s", lendTotalValue);
-            console.log("lendRewardAmount: %s", lendRewardAmount);
-            console.log("lendRewardPer: %s", lendRewardPer);
         }
 
         if (borrowTotalValue > 0) {
@@ -170,9 +168,6 @@ contract AirDrop is Ownable {
                 borrowTotalValue = borrowTotalValue.div(1e18);
             }
             borrowRewardPer = borrowRewardAmount.div(borrowTotalValue);
-            console.log("borrwoTotalValue: %s", borrowTotalValue);
-            console.log("borrowRewardAmount: %s", borrowRewardAmount);
-            console.log("borrowRewardPer: %s", borrowRewardPer);
         }
 
         if (lpTotalValue > 0) {
@@ -180,13 +175,10 @@ contract AirDrop is Ownable {
                 lpTotalValue = lpTotalValue.div(1e18);
             }
             lpRewardPer = lpRewardAmount.div(lpTotalValue);
-            console.log("lpTotalValue: %s", lpTotalValue);
-            console.log("lpRewardAmount: %s", lpRewardAmount);
-            console.log("lpRewardPer: %s", lpRewardPer);
         }
     }
 
-    function doAirdrop(uint256 _count) external onlyOwner {
+    function doAirdrop(uint256 _count) external onlyGovernace {
         if (_count == 0) {
             _count = depositUsers.length();
         }
@@ -219,7 +211,6 @@ contract AirDrop is Ownable {
                     }
                 }
             }
-            console.log("plgr amount: ", plgrAmount);
             IStaker(staker).mint(user, plgrAmount);
         }
         _reset(_count);
@@ -264,12 +255,10 @@ contract AirDrop is Ownable {
 
         for (uint256 i = 0; i < _count; i++) {
             address user = depositUsers.at(0);
-            console.log("user: %s", user);
             depositUsers.remove(user);
         }
 
         if (depositUsers.length() == 0) {
-            console.log("no users");
             lendTotalValue = 0;
             borrowTotalValue = 0;
             lpTotalValue = 0;
@@ -304,6 +293,11 @@ contract AirDrop is Ownable {
 
     modifier onlyPledge() {
         require(pledge[msg.sender], "not Pledge");
+        _;
+    }
+
+    modifier onlyGovernace() {
+        require(governace[msg.sender], "not Governace");
         _;
     }
 }

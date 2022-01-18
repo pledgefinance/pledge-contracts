@@ -14,7 +14,7 @@ import { Escrow } from "../typechain/Escrow";
 import { Portfolios } from "../typechain/Portfolios";
 // import { Erc1155Token as ERC1155Token } from "../typechain/Erc1155Token";
 import { TestUtils, BLOCK_TIME_LIMIT } from "./testUtils";
-import {  BigNumberish, formatUnits, parseEther } from "ethers/utils";
+import { BigNumberish, formatUnits, parseEther } from "ethers/utils";
 
 import ERC1155MockReceiverArtifact from "../mocks/ERC1155MockReceiver.json";
 import { Iweth } from "../typechain/Iweth";
@@ -229,8 +229,6 @@ describe("AirDrop", () => {
         // check && expect(await t.hasLiquidityToken(user, maturities[maturitiesIndex], new BigNumber(amount))).to.be.true;
     }
 
-    
-
     it("First Day", async () => {
         console.log("-------------First Day------------------");
         await lend(0, CURRENCY.DAI, alice, WeiPerEther.mul(100));
@@ -240,22 +238,22 @@ describe("AirDrop", () => {
         await lend(0, CURRENCY.DAI, anna, WeiPerEther.mul(100));
         console.log("Anna lend 100 DAI");
         console.log("-----------------------------------");
-      
+
         await airdrop.connect(owner).calculateEarn();
         await airdrop.doAirdrop(0);
         console.log("Distributed finished");
         console.log("-----------------------------------");
         let b = await checkEarnBalance(alice);
         console.log(
-            `Alice earns ${b}, ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
+            `Alice earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
         b = await checkEarnBalance(bob);
         console.log(
-            `Bob earns ${b}, ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
+            `Bob earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
         b = await checkEarnBalance(anna);
         console.log(
-            `Anna earns ${b}, ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
+            `Anna earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
         console.log("---------------END-----------------");
     });
@@ -276,22 +274,22 @@ describe("AirDrop", () => {
         await borrow(0, CURRENCY.ETH, parseEther("1.5"), anna, parseEther("100"));
         console.log("Anna borrow 100 DAI and uses 1.5 ETH as collateral ");
         console.log("-----------------------------------");
-      
+
         await airdrop.connect(owner).calculateEarn();
         await airdrop.doAirdrop(0);
         console.log("Distributed finished");
         console.log("-----------------------------------");
         let b = await checkEarnBalance(alice);
         console.log(
-            `Alice earns ${b}, ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
+            `Alice earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
         b = await checkEarnBalance(bob);
         console.log(
-            `Bob earns ${b}, ${formatUnits(b, 18)}  PLGR, which automatically locks in the Stake contract for 90 days`
+            `Bob earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
         b = await checkEarnBalance(anna);
         console.log(
-            `Anna earns ${b}, ${formatUnits(b, 18)}  PLGR, which automatically locks in the Stake contract for 90 days`
+            `Anna earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
         console.log("--------------END------------------");
     });
@@ -329,22 +327,19 @@ describe("AirDrop", () => {
 
         let b = await checkEarnBalance(owner);
         console.log(
-            `PLGR Manager earns ${b}, ${formatUnits(
-                b,
-                18
-            )} PLGR, which automatically locks in the Stake contract for 90 days`
+            `PLGR Manager earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
         b = await checkEarnBalance(alice);
         console.log(
-            `Alice earns ${b}, ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
+            `Alice earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
         b = await checkEarnBalance(bob);
         console.log(
-            `Bob earns ${b}, ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
+            `Bob earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
         b = await checkEarnBalance(anna);
         console.log(
-            `Anna earns ${b}, ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
+            `Anna earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
 
         console.log("---------------END-----------------");
@@ -382,22 +377,19 @@ describe("AirDrop", () => {
 
         let b = await checkEarnBalance(owner);
         console.log(
-            `PLGR Manager earns ${b}, ${formatUnits(
-                b,
-                18
-            )} PLGR, which automatically locks in the Stake contract for 90 days`
+            `PLGR Manager earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
         b = await checkEarnBalance(alice);
         console.log(
-            `Alice earns ${b}, ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
+            `Alice earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
         b = await checkEarnBalance(bob);
         console.log(
-            `Bob earns ${b}, ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
+            `Bob earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
         b = await checkEarnBalance(anna);
         console.log(
-            `Anna earns ${b}, ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
+            `Anna earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
 
         console.log("---------------END-----------------");
@@ -419,15 +411,15 @@ describe("AirDrop", () => {
         console.log("-----------------------------------");
         let b = await checkEarnBalance(alice);
         console.log(
-            `Alice earns ${b}, ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
+            `Alice earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
         b = await checkEarnBalance(bob);
         console.log(
-            `Bob earns ${b}, ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
+            `Bob earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
         b = await checkEarnBalance(anna);
         console.log(
-            `Anna earns ${b}, ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
+            `Anna earns ${formatUnits(b, 18)} PLGR, which automatically locks in the Stake contract for 90 days`
         );
         console.log("---------------END-----------------");
     });

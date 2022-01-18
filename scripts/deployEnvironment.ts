@@ -125,6 +125,7 @@ export async function deployTestEnvironment(
             deployWallet
         ) as CreateProxyFactory,
         RouterAddress: router.contract.address,
+        Governace: deployWallet.address
     };
 }
 
