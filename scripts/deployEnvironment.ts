@@ -125,7 +125,11 @@ export async function deployTestEnvironment(
             deployWallet
         ) as CreateProxyFactory,
         RouterAddress: router.contract.address,
-        Governace: deployWallet.address
+        Governace: deployWallet.address,
+        plgrTotalPerDay: "3000",
+        plgrLendRatio: "25",
+        plgrborrowRatio: "30",
+        plgrLiquidityRatio: "45",
     };
 }
 

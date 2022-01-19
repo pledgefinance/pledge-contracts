@@ -56,6 +56,10 @@ export interface Environment {
     proxyFactory: CreateProxyFactory;
     RouterAddress?: string;
     Governace?: string;
+    plgrTotalPerDay: string;
+    plgrLendRatio: string;
+    plgrborrowRatio: string;
+    plgrLiquidityRatio: string;
 }
 
 // This is a mirror of the enum in Governed
@@ -394,12 +398,47 @@ export class NotionalDeployer {
             environment.proxyFactory
         )) as ERC1155Trade;
 
-        const airdrop = (
-            await NotionalDeployer.deployContract(owner, "AirDrop", [environment.PLGR.address], confirmations)
-        ).contract as IAirdrop;
+        const airdrop = (await NotionalDeployer.deployProxyContract(
+            owner,
+            "AirDrop",
+            "address,address,address",
+            [directory.address, owner.address, environment.PLGR.address],
+            proxyAdmin,
+            libraries,
+            deployedCodeHash,
+            confirmations,
+            environment.proxyFactory
+        )) as IAirdrop;
 
-        const vault = (await NotionalDeployer.deployContract(owner, "Vault", [environment.PLGR.address], confirmations))
-            .contract as IVault;
+        const vault = (await NotionalDeployer.deployProxyContract(
+            owner,
+            "Vault",
+            "address,address,address",
+            [directory.address, owner.address, environment.PLGR.address],
+            proxyAdmin,
+            libraries,
+            deployedCodeHash,
+            confirmations,
+            environment.proxyFactory
+        )) as IVault;
+
+        // const staker = (await NotionalDeployer.deployProxyContract(
+        //     owner,
+        //     "Staker",
+        //     "address,address,address,address,[address,address]",
+        //     [
+        //         directory.address,
+        //         owner.address,
+        //         environment.PLGR.address,
+        //         vault.address,
+        //         [airdrop.address, owner.address],
+        //     ],
+        //     proxyAdmin,
+        //     libraries,
+        //     deployedCodeHash,
+        //     confirmations,
+        //     environment.proxyFactory
+        // )) as IStaker;
 
         const staker = (
             await NotionalDeployer.deployContract(
@@ -442,6 +481,22 @@ export class NotionalDeployer {
         if (environment.Governace) {
             await NotionalDeployer.txMined(airdrop.setGovernace([environment.Governace], [true]), confirmations);
         }
+        console.log(
+            "Params: ",
+            environment.plgrTotalPerDay,
+            environment.plgrLendRatio,
+            environment.plgrborrowRatio,
+            environment.plgrLiquidityRatio
+        );
+        await NotionalDeployer.txMined(
+            airdrop.setConfig(
+                WeiPerEther.mul(environment.plgrTotalPerDay),
+                environment.plgrLendRatio,
+                environment.plgrborrowRatio,
+                environment.plgrLiquidityRatio
+            ),
+            confirmations
+        );
         await NotionalDeployer.txMined(airdrop.setStaker(staker.address), confirmations);
         await NotionalDeployer.txMined(vault.setStaker(staker.address), confirmations);
 

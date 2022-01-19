@@ -95,6 +95,10 @@ async function main() {
                 ) as CreateProxyFactory,
                 RouterAddress: process.env.PANCAKE_ROUTER,
                 Governace: process.env.AIRDROP_GOVERNACE,
+                plgrTotalPerDay: process.env.PLGR_EARN_TOTAL_PER_DAY as string,
+                plgrLendRatio: process.env.PLGR_EARN_LEND_RATIO as string,
+                plgrborrowRatio: process.env.PLGR_EARN_BORROW_RATIO as string,
+                plgrLiquidityRatio: process.env.PLGR_EARN_LIQUIDITY_RATIO as string
             };
             break;
         case "56":
@@ -144,6 +148,10 @@ async function main() {
                 ) as CreateProxyFactory,
                 RouterAddress: process.env.PANCAKE_ROUTER,
                 Governace: process.env.AIRDROP_GOVERNACE,
+                plgrTotalPerDay: process.env.PLGR_EARN_TOTAL_PER_DAY as string,
+                plgrLendRatio: process.env.PLGR_EARN_LEND_RATIO as string,
+                plgrborrowRatio: process.env.PLGR_EARN_BORROW_RATIO as string,
+                plgrLiquidityRatio: process.env.PLGR_EARN_LIQUIDITY_RATIO as string
             };
             break;
         default:

@@ -2,18 +2,23 @@
 
 pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+// import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+// import "@openzeppelin/contracts/math/SafeMath.sol";
+// import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+// import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interface/IUniRouter.sol";
 import "./interface/IStaker.sol";
 import "./interface/ERC20.sol";
+// import "../upgradeable/Initializable.sol";
+// import "../upgradeable/Ownable.sol";
+import "../utils/Governed.sol";
+import "../lib/SafeMath.sol";
+import "../lib/SafeERC20.sol";
 
 import "@nomiclabs/buidler/console.sol";
 
-contract AirDrop is Ownable {
+contract AirDrop is Governed {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -60,12 +65,18 @@ contract AirDrop is Ownable {
 
     mapping(address => address[]) tokenPaths;
 
-    constructor(address _rewardToken) public {
-        governace[msg.sender] = true;
+    // constructor(address _rewardToken) public {
+    //     governace[msg.sender] = true;
+    //     rewardToken = IERC20(_rewardToken);
+    //     lendRewardAmount = _caculateRewardAmount(lendRatio);
+    //     borrowRewardAmount = _caculateRewardAmount(borrowRatio);
+    //     lpRewardAmount = _caculateRewardAmount(lpRatio);
+    // }
+
+    function initialize(address directory, address owner, address _rewardToken) public initializer {
+        Governed.initialize(directory, owner);
         rewardToken = IERC20(_rewardToken);
-        lendRewardAmount = _caculateRewardAmount(lendRatio);
-        borrowRewardAmount = _caculateRewardAmount(borrowRatio);
-        lpRewardAmount = _caculateRewardAmount(lpRatio);
+        governace[owner] = true;
     }
 
     function setRouter(address _router) external onlyGovernace {
@@ -108,7 +119,7 @@ contract AirDrop is Ownable {
     }
 
     function _caculateRewardAmount(uint256 _ratio) internal view returns (uint256) {
-        return dayPer.mul(_ratio).div(10000);
+        return dayPer.mul(_ratio).div(100);
     }
 
     function updateFromLend(
