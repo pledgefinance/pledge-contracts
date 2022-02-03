@@ -30,9 +30,9 @@ const BLOCK_TIME_LIMIT = 2_000_000_000;
 // BUSD - 4
 
 const currencyId = 1;
-const maturityId = 1;
-const depositAmount = 500;
-const liquidityAmount = 500;
+const maturityId = 0;
+const depositAmount = 5000;
+const liquidityAmount = 5000;
 
 async function main() {
     log("Setup liquidity start...");
