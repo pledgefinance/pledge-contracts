@@ -65,6 +65,8 @@ contract AirDrop is Governed {
 
     mapping(address => address[]) tokenPaths;
 
+    bool public isCalculate;
+
     // constructor(address _rewardToken) public {
     //     governace[msg.sender] = true;
     //     rewardToken = IERC20(_rewardToken);
@@ -72,8 +74,22 @@ contract AirDrop is Governed {
     //     borrowRewardAmount = _caculateRewardAmount(borrowRatio);
     //     lpRewardAmount = _caculateRewardAmount(lpRatio);
     // }
+    event CalculateEarn(
+        uint256 lendTotalValue,
+        uint256 borrowTotalValue,
+        uint256 lpTotalValue,
+        uint256 lendRewardPer,
+        uint256 borrowRewardPer,
+        uint256 lpRewardPer
+    );
 
-    function initialize(address directory, address owner, address _rewardToken) public initializer {
+    event DoAirdrop(address user, uint256 plgrAmount);
+
+    function initialize(
+        address directory,
+        address owner,
+        address _rewardToken
+    ) public initializer {
         Governed.initialize(directory, owner);
         rewardToken = IERC20(_rewardToken);
         governace[owner] = true;
@@ -85,6 +101,10 @@ contract AirDrop is Governed {
 
     function setStaker(address _staker) external onlyGovernace {
         staker = _staker;
+    }
+
+    function setIsCalculate(bool on) external onlyGovernace {
+        isCalculate = on;
     }
 
     function setPledges(address[] calldata _pledgeAddress, bool[] calldata _enable) external onlyOwner {
@@ -158,6 +178,7 @@ contract AirDrop is Governed {
     }
 
     function calculateEarn() external onlyGovernace {
+        require(!isCalculate, "is already calculate, pls do airdrop");
         for (uint256 index = 0; index < depositTokens.length(); index++) {
             address token = depositTokens.at(index);
             uint256 price = _tokenPrice(token);
@@ -187,6 +208,9 @@ contract AirDrop is Governed {
             }
             lpRewardPer = lpRewardAmount.div(lpTotalValue);
         }
+
+        isCalculate = true;
+        emit CalculateEarn(lendTotalValue, borrowTotalValue, lpTotalValue, lendRewardPer, borrowRewardPer, lpRewardPer);
     }
 
     function doAirdrop(uint256 _count) external onlyGovernace {
@@ -223,25 +247,46 @@ contract AirDrop is Governed {
                 }
             }
             IStaker(staker).mint(user, plgrAmount);
+            emit DoAirdrop(user, plgrAmount);
         }
         _reset(_count);
     }
 
-    function depositUsersLen() external view returns (uint256) {
+    function depositUsersLen() public view returns (uint256) {
         return depositUsers.length();
     }
 
-    function depositUser(uint256 _index) external view returns (address) {
+    function depositUser(uint256 _index) public view returns (address) {
         return depositUsers.at(_index);
     }
 
-    function depositTokenLen() external view returns (uint256) {
+    function allDepositUsers() external view returns (address[] memory) {
+        address[] memory users = new address[](depositUsersLen());
+        for (uint256 index = 0; index < depositUsersLen(); index++) {
+            users[index] = depositUser(index);
+        }
+        return users;
+    }
+
+    function depositTokenLen() public view returns (uint256) {
         return depositTokens.length();
     }
 
-    function depositToken(uint256 _index) external view returns (address) {
+    function depositToken(uint256 _index) public view returns (address) {
         return depositTokens.at(_index);
     }
+
+    function allDepositTokens() external view returns (address[] memory) {
+        address[] memory tokens = new address[](depositTokenLen());
+        for (uint256 index = 0; index < depositTokenLen(); index++) {
+            tokens[index] = depositToken(index);
+        }
+        return tokens;
+    }
+
+    function reset(uint256 _count) external onlyGovernace {
+        _reset(_count);
+    } 
 
     function _reset(uint256 _count) internal {
         if (_count == 0) {
@@ -273,6 +318,11 @@ contract AirDrop is Governed {
             lendTotalValue = 0;
             borrowTotalValue = 0;
             lpTotalValue = 0;
+            lendRewardPer = 0;
+            borrowRewardPer = 0;
+            lpRewardPer = 0;
+
+            isCalculate = false;
 
             for (uint256 j = 0; j < depositTokens.length(); j++) {
                 address token = depositTokens.at(j);

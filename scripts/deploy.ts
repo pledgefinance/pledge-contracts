@@ -163,7 +163,7 @@ async function main() {
     const notional = await NotionalDeployer.deploy(
         environment.deploymentWallet,
         environment,
-        new BigNumber(8),
+        new BigNumber(16),
         parseEther("1.06"),
         parseEther("1.02"),
         parseEther("0.80"),
