@@ -1,8 +1,8 @@
-import { Provider } from "ethers/providers";
-import { readFileSync, writeFileSync } from "fs";
-import { BigNumber, parseUnits } from "ethers/utils";
-import { Wallet, ContractFactory, Contract, ethers } from "ethers";
-import { WeiPerEther } from "ethers/constants";
+import {Provider} from "ethers/providers";
+import {readFileSync, writeFileSync} from "fs";
+import {BigNumber, parseUnits} from "ethers/utils";
+import {Wallet, ContractFactory, Contract, ethers} from "ethers";
+import {WeiPerEther} from "ethers/constants";
 
 import DirectoryArtifact from "../build/Directory.json";
 import EscrowArtifact from "../build/Escrow.json";
@@ -17,23 +17,23 @@ import CreateProxyFactoryArtifact from "../build/CreateProxyFactory.json";
 import AdminUpgradeabilityProxyArtifact from "../build/AdminUpgradeabilityProxy.json";
 import OpenZeppelinUpgradesOwnableArtifact from "../build/OpenZeppelinUpgradesOwnable.json";
 
-import { Portfolios } from "../typechain/Portfolios";
-import { Escrow } from "../typechain/Escrow";
-import { ProxyAdmin } from "../typechain/ProxyAdmin";
-import { Directory } from "../typechain/Directory";
-import { IStaker } from "../typechain/IStaker";
-import { IAirdrop } from "../typechain/IAirdrop";
-import { IVault } from "../typechain/IVault";
-import { Ierc20 as ERC20 } from "../typechain/Ierc20";
-import { CashMarket } from "../typechain/CashMarket";
-import { Erc1155Token as ERC1155Token } from "../typechain/Erc1155Token";
-import { Erc1155Trade as ERC1155Trade } from "../typechain/Erc1155Trade";
-import { Ierc1820Registry as IERC1820Registry } from "../typechain/Ierc1820Registry";
-import { Iweth as IWETH } from "../typechain/Iweth";
-import { IAggregator } from "../typechain/IAggregator";
-import { OpenZeppelinUpgradesOwnable } from "../typechain/OpenZeppelinUpgradesOwnable";
-import { CreateProxyFactory } from "../typechain/CreateProxyFactory";
-import { AdminUpgradeabilityProxy } from "../typechain/AdminUpgradeabilityProxy";
+import {Portfolios} from "../typechain/Portfolios";
+import {Escrow} from "../typechain/Escrow";
+import {ProxyAdmin} from "../typechain/ProxyAdmin";
+import {Directory} from "../typechain/Directory";
+import {IStaker} from "../typechain/IStaker";
+import {IAirdrop} from "../typechain/IAirdrop";
+import {IVault} from "../typechain/IVault";
+import {Ierc20 as ERC20} from "../typechain/Ierc20";
+import {CashMarket} from "../typechain/CashMarket";
+import {Erc1155Token as ERC1155Token} from "../typechain/Erc1155Token";
+import {Erc1155Trade as ERC1155Trade} from "../typechain/Erc1155Trade";
+import {Ierc1820Registry as IERC1820Registry} from "../typechain/Ierc1820Registry";
+import {Iweth as IWETH} from "../typechain/Iweth";
+import {IAggregator} from "../typechain/IAggregator";
+import {OpenZeppelinUpgradesOwnable} from "../typechain/OpenZeppelinUpgradesOwnable";
+import {CreateProxyFactory} from "../typechain/CreateProxyFactory";
+import {AdminUpgradeabilityProxy} from "../typechain/AdminUpgradeabilityProxy";
 
 import Debug from "debug";
 import path from "path";
@@ -216,7 +216,7 @@ export class NotionalDeployer {
         let logicAddress;
 
         if (name != "CashMarket") {
-            const { contract: logic, bytecodeHash } = await NotionalDeployer.deployContract(
+            const {contract: logic, bytecodeHash} = await NotionalDeployer.deployContract(
                 owner,
                 name,
                 [],
@@ -239,7 +239,7 @@ export class NotionalDeployer {
         let proxyAddress;
         if (proxyFactory == undefined) {
             // Deploy a proxy without the proxy factory, this will not have a predicatable address
-            const { contract: proxy } = await NotionalDeployer.deployContract(
+            const {contract: proxy} = await NotionalDeployer.deployContract(
                 owner,
                 "AdminUpgradeabilityProxy",
                 [logicAddress, proxyAdmin.address, data],
@@ -263,7 +263,7 @@ export class NotionalDeployer {
 
         log(`Deployed proxy for ${artifact.contractName} at ${proxyAddress}`);
         console.log(`Deployed proxy for ${artifact.contractName} at ${proxyAddress}`);
-        return new ethers.Contract(proxyAddress, artifact.abi, owner) as unknown as T;
+        return (new ethers.Contract(proxyAddress, artifact.abi, owner) as unknown) as T;
     };
 
     public static txMined = async (tx: Promise<ethers.ContractTransaction>, confirmations: number) => {
@@ -299,7 +299,7 @@ export class NotionalDeployer {
         let cashMarketLogicAddress: string;
 
         {
-            let { contract, bytecodeHash } = await NotionalDeployer.deployContract(
+            let {contract, bytecodeHash} = await NotionalDeployer.deployContract(
                 owner,
                 "Liquidation",
                 [],
@@ -311,7 +311,7 @@ export class NotionalDeployer {
         }
 
         {
-            let { contract, bytecodeHash } = await NotionalDeployer.deployContract(
+            let {contract, bytecodeHash} = await NotionalDeployer.deployContract(
                 owner,
                 "RiskFramework",
                 [],
@@ -322,7 +322,7 @@ export class NotionalDeployer {
         }
 
         {
-            let { contract, bytecodeHash } = await NotionalDeployer.deployContract(
+            let {contract, bytecodeHash} = await NotionalDeployer.deployContract(
                 owner,
                 "CashMarket",
                 [],
@@ -422,24 +422,6 @@ export class NotionalDeployer {
             environment.proxyFactory
         )) as IVault;
 
-        // const staker = (await NotionalDeployer.deployProxyContract(
-        //     owner,
-        //     "Staker",
-        //     "address,address,address,address,[address,address]",
-        //     [
-        //         directory.address,
-        //         owner.address,
-        //         environment.PLGR.address,
-        //         vault.address,
-        //         [airdrop.address, owner.address],
-        //     ],
-        //     proxyAdmin,
-        //     libraries,
-        //     deployedCodeHash,
-        //     confirmations,
-        //     environment.proxyFactory
-        // )) as IStaker;
-
         const staker = (
             await NotionalDeployer.deployContract(
                 owner,
@@ -479,7 +461,13 @@ export class NotionalDeployer {
             await NotionalDeployer.txMined(airdrop.setRouter(environment.RouterAddress), confirmations);
         }
         if (environment.Governace) {
-            await NotionalDeployer.txMined(airdrop.setGovernace([environment.Governace], [true]), confirmations);
+            const users = [environment.Governace];
+            const swiths = [true];
+            if (process.env.TRANSFER_OWNER_PUBLIC_KEY) {
+                users.push(process.env.TRANSFER_OWNER_PUBLIC_KEY);
+                swiths.push(true);
+            }
+            await NotionalDeployer.txMined(airdrop.setGovernace(users, swiths), confirmations);
         }
         console.log(
             "Params: ",
@@ -576,7 +564,7 @@ export class NotionalDeployer {
     ) => {
         log("Listing currency on Escrow");
         await NotionalDeployer.txMined(
-            this.escrow.listCurrency(tokenAddress, { isERC777, hasTransferFee }),
+            this.escrow.listCurrency(tokenAddress, {isERC777, hasTransferFee}),
             this.defaultConfirmations
         );
         const currencyId = (await this.escrow.addressToCurrencyId(tokenAddress)) as number;
@@ -657,7 +645,7 @@ export class NotionalDeployer {
 
     public deployLibrary = async (name: string, dryRun: boolean) => {
         if (!dryRun) {
-            const { contract, bytecodeHash } = await NotionalDeployer.deployContract(
+            const {contract, bytecodeHash} = await NotionalDeployer.deployContract(
                 this.owner,
                 name,
                 [],
@@ -735,7 +723,7 @@ export class NotionalDeployer {
 
     private async upgradeDeployLogic(contractName: string) {
         log("Deploying new logic contract");
-        const { contract: upgrade, bytecodeHash: newBytecodeHash } = await NotionalDeployer.deployContract(
+        const {contract: upgrade, bytecodeHash: newBytecodeHash} = await NotionalDeployer.deployContract(
             this.owner,
             contractName,
             [],
@@ -868,12 +856,12 @@ export class NotionalDeployer {
         const libraries = Array.from(this.libraries.entries()).reduce((obj, [name, contract]) => {
             obj[name] = contract.address;
             return obj;
-        }, {} as { [name: string]: string });
+        }, {} as {[name: string]: string});
 
         const deployedCodeHash = Array.from(this.deployedCodeHash.entries()).reduce((obj, [name, hash]) => {
             obj[name] = hash;
             return obj;
-        }, {} as { [name: string]: string });
+        }, {} as {[name: string]: string});
 
         const gitHash = require("child_process").execSync("git rev-parse HEAD").toString().trim();
 

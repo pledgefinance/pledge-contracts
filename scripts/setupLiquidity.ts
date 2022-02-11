@@ -29,36 +29,67 @@ const BLOCK_TIME_LIMIT = 2_000_000_000;
 // BTC - 3
 // BUSD - 4
 
-const currencyId = 1;
-const maturityId = 1;
-const depositAmount = 500;
-const liquidityAmount = 500;
+// const currencyId = 1;
+// const maturityId = 1;
+// const depositAmount = 500;
+// const liquidityAmount = 500;
+
+const params = [
+    // {currencyId: 1, maturityIds: [0, 1], amount: 1000},
+    // {currencyId: 2, maturityIds: [0, 1], amount: 1000},
+    {currencyId: 4, maturityIds: [0], amount: 500},
+];
 
 async function main() {
+    for (let i = 0; i < params.length; i++) {
+        const config = params[i];
+        await setup(config);
+    }
+}
+
+async function setup(config: any) {
+    const {currencyId, maturityIds, amount} = config;
     log("Setup liquidity start...");
-    log("Valid network checking...");
+    log("config:", config);
+    // log("Valid network checking...");
     // if ((process.env.DEPLOY_CHAIN_ID as string) != "56") {
     //     log(`Not running on local environment, using ${process.env.DEPLOY_CHAIN_ID as string} exiting`);
     //     exit(1);
     // }
-    log("Valid network checking passed!");
+    // log("Valid network checking passed!");
     const provider = new JsonRpcProvider(process.env.TESTNET_PROVIDER);
     const account = new Wallet(process.env.TESTNET_PRIVATE_KEY as string, provider);
     const notional = await NotionalDeployer.restoreFromFile(
         path.join(__dirname, ("../" + process.env.CONTRACTS_FILE) as string),
         account
     );
-    const currencyToken = new Contract(await notional.escrow.currencyIdToAddress(currencyId), ERC20Artifact.abi, account) as Erc20;
+    const currencyToken = new Contract(
+        await notional.escrow.currencyIdToAddress(currencyId),
+        ERC20Artifact.abi,
+        account
+    ) as Erc20;
 
     // TODO: deposit
+
+    const depositAmount = maturityIds.length * amount;
+
     await txMined(currencyToken.approve(notional.escrow.address, MaxUint256));
     log(`Deposit $${depositAmount} to Escrow contract...`);
     await txMined(notional.escrow.deposit(currencyToken.address, parseEther(String(depositAmount))));
 
     // TODO: first param: currency ID, last param: amount
-    log(`Adding $${liquidityAmount} liquidity to 1M Dai market...`);
-    await initializeLiquidity(currencyId, notional, account, maturityId, parseEther(String(depositAmount)), parseEther(String(liquidityAmount)));
-
+    for (let i = 0; i < maturityIds.length; i++) {
+        const maturityId = maturityIds[i];
+        log(`Adding $${amount} liquidity to currency ${currencyId} market ${maturityId}...`);
+        await initializeLiquidity(
+            currencyId,
+            notional,
+            account,
+            maturityId,
+            parseEther(String(amount)),
+            parseEther(String(amount))
+        );
+    }
     const chainId = process.env.DEPLOY_CHAIN_ID as string;
     if (chainId == "1337") {
         log("Adding ETH into WETH for Wallet 2");
@@ -77,7 +108,6 @@ async function initializeLiquidity(
     cash: BigNumber,
     fCash: BigNumber
 ) {
-
     const fg = await notional.portfolios.getCashGroup(cashGroup);
     const futureCash = new Contract(fg.cashMarket, CashMarketArtifact.abi, account) as CashMarket;
     const maturities = await futureCash.getActiveMaturities();

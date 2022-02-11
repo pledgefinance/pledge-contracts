@@ -1,0 +1,34 @@
+{
+  "chainId": 97,
+  "networkName": "unknown",
+  "escrow": "0x9AE6440416a064b0343033B597294582cd3527d3",
+  "portfolios": "0xAE1c5b719Dade3d1eb70d7803E864B937B73fffC",
+  "proxyAdmin": "0xBD39819EAaB49AB23F59f7ffb5889cbd4761e753",
+  "proxyFactory": "0xe580dbE1A81Cfe352E45B2e76D0f8b3f20860389",
+  "directory": "0x90064B29A1389Fc7Dc791612F86c40D4E8C8CefB",
+  "erc1155": "0x67a046A823ACC0335342050e6174f179b3303A2f",
+  "erc1155trade": "0xbb62977bE1206e5d648e228Cf89C458Fd3e652bf",
+  "cashMarketLogic": "0x6EE673610f25f00D1047E54285593307d2E8f2B6",
+  "vault": "0x2b40Ac9Cf67b8D28f6Adf8A9191304dD4397C43f",
+  "staker": "0x7A7B21F6Eb1dfD773f53170363D72700228c1dD9",
+  "airdrop": "0x636833E19BE14440f030F9bfbcB09dd1a012F136",
+  "startBlock": 15988890,
+  "defaultConfirmations": 3,
+  "libraries": {
+    "Liquidation": "0x27Ab1e247008d9131268022642Cd73ff09aD02f9",
+    "RiskFramework": "0x1a40008D675318749a937047931cE46C92fEDe63"
+  },
+  "deployedCodeHash": {
+    "Liquidation": "0x3bbb8c5712de569fc31cb2235d43b942541fdd3fb17224d6855d3ca85d20140e",
+    "RiskFramework": "0xebf766406118cd2d983787bf3e199733d4fffb0fc87a7ef468afccd77a2c8879",
+    "CashMarket": "0x1bb0bc870377496780fc9699a1776bf306cd4366baf1dacc185a1733bed0885b",
+    "Directory": "0xd266ae52d8385a4be8d91efe549b272f9e467490088f9753aa1e0bc2f6d0a66c",
+    "Escrow": "0xa1931e72ee1d81379ba4e2f099981d1f8083487aceb6b913e0c4c3dabbfb5b9b",
+    "Portfolios": "0x2c9d9b9dbee559bdf28d4dc0553bf4bd7e02b6883dcda522b30351cf065a86b5",
+    "ERC1155Token": "0x9d4cd5afddd36c6183c826821cc06addbbb804fd02374cbbb752c008a3c869f1",
+    "ERC1155Trade": "0x88f2062b3601179132af3565f67d3debd2344e08ced1c3230ff0f9c1d1d9bf98",
+    "AirDrop": "0x04441c96a4e5144970fa9983fc221a320092ca42af09dad63ea1da2c4b1ad638",
+    "Vault": "0x55ac227a8488adb28cbec3696be34b2a0f347077b9c258d35a5cbe5bb5807c2b"
+  },
+  "gitHash": "1eea03daaa4c5592effd26fda3ed3aeb212c2f53"
+}

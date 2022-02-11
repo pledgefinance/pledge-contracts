@@ -24,6 +24,7 @@ import { RetryProvider } from "./RetryProvider";
 
 const log = Debug("notional:deploy");
 const ONE_MONTH = 2592000;
+const ONE_DAY = 86400;
 const BASIS_POINT = 1e5;
 
 async function main() {
@@ -259,8 +260,8 @@ async function main() {
     console.log("BUSD cash market");
     await notional.deployCashMarket(
         busdId,
-        2,
-        ONE_MONTH,
+        30,
+        ONE_DAY,
         parseEther("1000"),
         new BigNumber(2.5 * BASIS_POINT),
         new BigNumber(0), // 2/100 * 1e18 (2%)
